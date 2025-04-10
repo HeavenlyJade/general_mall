@@ -1,0 +1,6 @@
+{
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "fixed-search": "/components/fixed-search/fixed-search"
+  }
+}

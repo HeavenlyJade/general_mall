@@ -1,0 +1,12 @@
+.name.data-v-57280228 {
+  font-size: 26rpx;
+  color: #555;
+}
+.sale-num.data-v-57280228 {
+  color: #bbbbbb;
+  font-size: 14px;
+}
+.price.data-v-57280228 {
+  color: #fa436a;
+  font-size: 14px;
+}

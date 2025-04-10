@@ -1,0 +1,133 @@
+page {
+  background: #f2f2f2;
+}
+.btn-hover {
+  background: #f2f2f2 !important;
+}
+.user .user-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vw;
+  padding: 30rpx;
+  z-index: 9;
+  border-radius: 0 0 20% 20%;
+  background: url("https://handsel.oss-cn-shenzhen.aliyuncs.com/1588938371592.jpg") no-repeat;
+  background-size: cover;
+}
+.user .user-wrap .setting {
+  color: #fff;
+  position: absolute;
+  top: 60rpx;
+  left: 60rpx;
+  font-size: 50rpx;
+}
+.user .user-wrap .info {
+  position: absolute;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80%;
+  top: 10%;
+}
+.user .user-wrap .info .avatar {
+  width: 150rpx;
+  height: 150rpx;
+  border-radius: 50%;
+  margin-bottom: 15rpx;
+}
+.user .user-wrap .info .nickname {
+  color: #fff;
+  font-size: 28rpx;
+}
+.user .user-wrap .info .auth-buttons {
+  margin-top: 10rpx;
+  width: 100%;
+  text-align: center;
+}
+.user .user-wrap .info .auth-buttons .auth-btn {
+  background-color: #07c160;
+  color: #fff;
+  font-size: 24rpx;
+  padding: 8rpx 30rpx;
+  border-radius: 30rpx;
+  border: none;
+  line-height: 1.5;
+  height: auto;
+}
+.user .order-status {
+  padding: 0 20rpx;
+  margin-top: -10vw;
+}
+.user .order-status .status-wrap {
+  border-radius: 25rpx;
+  overflow: hidden;
+}
+.user .order-status .status-wrap .status-list {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  background: #fff;
+  padding-top: 30rpx;
+  padding-bottom: 30rpx;
+}
+.user .order-status .status-wrap .status-list .status-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.user .order-status .status-wrap .status-list .status-item .item-icon {
+  line-height: 1;
+  font-size: 65rpx;
+  color: #bbb;
+}
+.user .order-status .status-wrap .status-list .status-item .item-text {
+  font-size: 28rpx;
+  color: #666;
+  margin-top: 5rpx;
+}
+.user .com-item {
+  padding-left: 20rpx;
+  padding-right: 20rpx;
+  margin-top: 20rpx;
+}
+.user .com-item .com-wrap {
+  border-radius: 25rpx;
+  overflow: hidden;
+}
+.user .cell {
+  height: 80rpx;
+  padding-left: 20rpx;
+  padding-right: 20rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border-bottom: 1px solid #f8f8f8;
+}
+.user .cell:active {
+  background: #f2f2f2;
+}
+.user .cell:last-child {
+  border-bottom: none !important;
+}
+.user .cell .cell-left {
+  display: flex;
+  align-items: center;
+}
+.user .cell .cell-left .cell-icon {
+  width: 50rpx;
+  height: 50rpx;
+}
+.user .cell .cell-left .cell-text {
+  color: #666;
+  font-size: 28rpx;
+  margin-left: 20rpx;
+}
+.user .cell .iconfont {
+  font-size: 40rpx;
+  color: #999;
+}
