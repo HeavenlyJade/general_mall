@@ -1,185 +1,147 @@
 <template>
 	<view class="user">
 		<!-- 头部 -->
-		<view class="user-wrap" @click="tologin()">
-			<view class="setting iconfont icon31shezhi"></view>
-			<view class="info">
-
+		<view class="user-header">
+			<view class="avatar-container">
 				<image class="avatar" mode="aspectFill"
-					:src="storeUser.wxHeadImg || userInfo.headImg || userInfo.wxHeadImg || getConst().defaultAvatar">
+					:src="storeUser.wxHeadImg || userInfo.avatar || userInfo.wxHeadImg || getConst().defaultAvatar">
 				</image>
-
-				<!-- 未授权用户显示按钮 -->
-				<view v-if="!hasWxAuth" class="auth-buttons">
-					<button class="auth-btn" @click="getUserProfile" v-if="!hasWxAuth">
-						点击授权微信登录
-					</button>
-				</view>
-
-				<view v-else class="nickname">{{ storeUser.wxNickName || userInfo.wxNickName || userInfo.nickName }}
-					<text v-if="userInfo.level == 100" style="color: red;"></text>
-					<text v-if="userInfo.level == 101" style="color: red;">·会员</text>
-				</view>
-
+			</view>
+			<view class="user-info">
+				<view class="nickname">{{storeUser.wxNickName || userInfo.nickname || userInfo.wxNickName || '未登录'}}</view>
+				<view class="user-id" v-if="userInfo.user_id">ID: {{userInfo.user_id}}</view>
+			</view>
+			
+			<!-- 未授权用户显示按钮 -->
+			<view v-if="!hasWxAuth" class="auth-buttons">
+				<button class="auth-btn" @click="getUserProfile">授权微信登录</button>
+			</view>
+			
+			<!-- 右上角操作按钮 -->
+			<view class="header-actions">
+				<view class="action-btn">•••</view>
+				<view class="action-btn">◯</view>
 			</view>
 		</view>
-
-		<!-- 订单状态 -->
-		<view class="order-status">
-			<view class="status-wrap">
-				<!-- 单元格 -->
-				<view class="cell" @click="$navigateTo('/pages/order/order')">
-					<view class="cell-left">
-						<image class="cell-icon" src="/static/img/user/icon-order.png" mode="aspectFill"></image>
-						<view class="cell-text">全部订单</view>
-					</view>
-					<view class="iconfont iconmore1"></view>
+		
+		<!-- 统计数据 -->
+		<view class="stats-container">
+			<view class="stat-item">
+				<view class="stat-value">0</view>
+				<view class="stat-label">酒豆</view>
+			</view>
+			<view class="stat-item">
+				<view class="stat-value">0</view>
+				<view class="stat-label">收益</view>
+			</view>
+			<view class="stat-item">
+				<view class="stat-value">0</view>
+				<view class="stat-label">优惠券</view>
+			</view>
+		</view>
+		
+		<!-- 可用收益卡片 -->
+		<view class="income-card">
+			<view class="income-title">可用收益</view>
+			<view class="income-content">
+				<view class="income-value">0</view>
+				<button class="withdraw-btn">去提现</button>
+			</view>
+		</view>
+		
+		<!-- 我的订单 -->
+		<view class="section-card">
+			<view class="section-header">
+				<text class="section-title">我的订单</text>
+				<view class="section-more" @click="$navigateTo('/pages/order/order')">
+					全部 <text class="arrow-right">›</text>
 				</view>
-
-				<!-- 订单状态 -->
-				<view class="status-list">
-					<view class="status-item" hover-class="btn-hover" v-for="(item, index) in orderStatusList"
-						:key="index" @click="$navigateTo(item.uri)">
-						<view class="item-icon" :class="item.icon"></view>
-						<view class="item-text">{{ item.name }}</view>
+			</view>
+			<view class="order-icons">
+				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?stat=1')">
+					<view class="icon-container waiting-payment">
+						<text class="icon">󰡷</text>
 					</view>
+					<text class="icon-text">待付款</text>
+				</view>
+				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?stat=2')">
+					<view class="icon-container waiting-delivery">
+						<text class="icon">󰡸</text>
+					</view>
+					<text class="icon-text">待发货</text>
+				</view>
+				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?stat=3')">
+					<view class="icon-container completed">
+						<text class="icon">󰡹</text>
+					</view>
+					<text class="icon-text">已完成</text>
+				</view>
+				<view class="order-icon-item" @click="$navigateTo('/pages/order/order-refund')">
+					<view class="icon-container refund">
+						<text class="icon">󰡺</text>
+					</view>
+					<text class="icon-text">退换货</text>
 				</view>
 			</view>
 		</view>
-
-		<!-- 滑动导航 -->
-		<!-- <view style="border-radius: 20rpx; overflow: hidden; margin: 0 20rpx;">
-			<com-nav :list="list" :col="4"></com-nav>
-		</view> -->
-
-		<!-- 用户功能 -->
-		<view class="com-item">
-			<view class="com-wrap">
-
-
-
-				<view class="cell" @click="tuiguang()" v-if="userInfo.level > 100">
-					<view class="cell-left">
-						<image class="cell-icon" src="/static/img/user/icon-foot.png" mode="aspectFill"></image>
-						<view class="cell-text">我的推荐码</view>
-					</view>
-					<view class="iconfont iconmore1"></view>
-				</view>
-
-
-				<view class="cell" @click="$navigateTo('/pages/user/subordinate')" v-if="userInfo.level > 100">
-					<view class="cell-left">
-						<image class="cell-icon" src="/static/img/user/icon-collect.png" mode="aspectFill"></image>
-						<view class="cell-text">推荐记录</view>
-					</view>
-					<view class="iconfont iconmore1"></view>
-				</view>
-
-
-				<view class="cell" @click="$navigateTo('/pages/user/fumou-center-template')"
-					v-if="userInfo.level > 100">
-					<view class="cell-left">
-						<image class="cell-icon" src="/static/img/user/icon-about.png" mode="aspectFill"></image>
-						<view class="cell-text">我的奖金</view>
-					</view>
-					<view class="iconfont iconmore1"></view>
-				</view>
-				<view class="cell" @click="$navigateTo('/pages/user/commission')" v-if="userInfo.level > 100">
-					<view class="cell-left">
-						<image class="cell-icon" src="/static/img/user/icon-foot.png" mode="aspectFill"></image>
-						<view class="cell-text">奖金记录</view>
-					</view>
-					<view class="iconfont iconmore1"></view>
-				</view>
-
+		
+		<!-- 我的工具 -->
+		<view class="section-card">
+			<view class="section-header">
+				<text class="section-title">我的工具</text>
 			</view>
-		</view>
-
-		<!-- 用户服务 -->
-		<view class="com-item">
-			<view class="com-wrap">
-				<view class="cell" @click="$navigateTo('/pages/order/order-refund')">
-					<view class="cell-left">
-						<image class="cell-icon" src="/static/img/user/icon-kefu.png" mode="aspectFill"></image>
-						<view class="cell-text">售后记录</view>
+			<view class="tools-grid">
+				<view class="tool-item" @click="$navigateTo('/pages/index/guider')">
+					<view class="tool-icon store-icon">
+						<text class="tool-icon-text">󰀵</text>
 					</view>
-					<view class="iconfont iconmore1"></view>
+					<text class="tool-text">全国门店</text>
 				</view>
-
-
-
-
-				<view class="cell" @click="$navigateTo('/pages/address/address')">
-					<view class="cell-left">
-						<image class="cell-icon" src="/static/img/user/icon-address.png" mode="aspectFill"></image>
-						<view class="cell-text">收货地址</view>
+				<view class="tool-item" @click="$navigateTo('/pages/user/collect')">
+					<view class="tool-icon coupon-icon">
+						<text class="tool-icon-text">󰀶</text>
 					</view>
-					<view class="iconfont iconmore1"></view>
+					<text class="tool-text">优惠券</text>
 				</view>
-
-
-				<!-- <view class="cell" >
-					<view class="cell-left">
-						<image class="cell-icon" src="/static/img/user/icon-kefu.png" mode="aspectFill"></image>
-						<view class="cell-text">客服中心</view>
+				<view class="tool-item" @click="$navigateTo('/pages/address/address')">
+					<view class="tool-icon address-icon">
+						<text class="tool-icon-text">󰀷</text>
 					</view>
-					<view class="iconfont iconmore1"></view>
-				</view> -->
-
-				<!-- <view class="cell" @click="$navigateTo('/pages/user/collect')">
-					<view class="cell-left" >
-						<image class="cell-icon" src="/static/img/user/icon-collect.png" mode="aspectFill"></image>
-						<view class="cell-text">我的收藏</view>
+					<text class="tool-text">地址管理</text>
+				</view>
+				<view class="tool-item" @click="$navigateTo('/pages/user/html?key=cfg_com_help')">
+					<view class="tool-icon card-icon">
+						<text class="tool-icon-text">󰀸</text>
 					</view>
-					<view class="iconfont iconmore1"></view>
-				</view> -->
-
-				<!-- <view class="cell" >
-					<view class="cell-left">
-						<image class="cell-icon" src="/static/img/user/icon-help.png" mode="aspectFill"></image>
-						<view class="cell-text">帮助中心</view>
-					</view>
-					<view class="iconfont iconmore1"></view>
-				</view> -->
-				<!-- <view class="cell" @click="$navigateTo('/pages/user/html?key=cfg_rej_pocy')">
-					<view class="cell-left" >
-						<image class="cell-icon" src="/static/img/user/icon-help.png" mode="aspectFill"></image>
-						<view class="cell-text">退货政策</view>
-					</view>
-					<view class="iconfont iconmore1"></view>
+					<text class="tool-text">充值绑卡</text>
 				</view>
 				
-				<view class="cell" @click="$navigateTo('/pages/user/html?key=cfg_call_us')">
-					<view class="cell-left" >
-						<image class="cell-icon" src="/static/img/user/icon-about.png" mode="aspectFill"></image>
-						<view class="cell-text">联系我们</view>
+				<view class="tool-item">
+					<view class="tool-icon gift-icon">
+						<text class="tool-icon-text">󰀹</text>
 					</view>
-					<view class="iconfont iconmore1"></view>
+					<text class="tool-text">我的奖品</text>
 				</view>
-				
-				<view class="cell" @click="$navigateTo('/pages/user/html?key=cfg_how_tobuy')">
-					<view class="cell-left" >
-						<image class="cell-icon" src="/static/img/user/icon-collect.png" mode="aspectFill"></image>
-						<view class="cell-text">如何购买</view>
+				<view class="tool-item">
+					<view class="tool-icon withdraw-icon">
+						<text class="tool-icon-text">󰀺</text>
 					</view>
-					<view class="iconfont iconmore1"></view>
-				</view> -->
-
-				<view class="cell" @click="$navigateTo('/pages/user/html?key=cfg_com_help')">
-					<view class="cell-left">
-						<image class="cell-icon" src="/static/img/user/icon-about.png" mode="aspectFill"></image>
-						<view class="cell-text">帮助中心</view>
-					</view>
-					<view class="iconfont iconmore1"></view>
+					<text class="tool-text">提现绑卡</text>
 				</view>
-
-
+				<view class="tool-item">
+					<view class="tool-icon performance-icon">
+						<text class="tool-icon-text">󰀻</text>
+					</view>
+					<text class="tool-text">我的业绩</text>
+				</view>
+				<view class="tool-item">
+					<view class="tool-icon activity-icon">
+						<text class="tool-icon-text">󰀼</text>
+					</view>
+					<text class="tool-text">我的活动</text>
+				</view>
 			</view>
 		</view>
-
-		<!-- #ifdef MP-WEIXIN -->
-		<!-- 移除mp-wxauth组件，改为显式按钮 -->
-		<!-- #endif -->
 
 	</view>
 </template>
@@ -197,11 +159,7 @@ export default {
 	},
 
 	data() {
-
-
 		return {
-
-
 			userInfo: {
 				//headImg: '/static/img/user/avatar.jpg',
 				headImg: '/static/img/user/default-head.png',
@@ -215,14 +173,11 @@ export default {
 				{ name: '全部', icon: 'iconfont icon31yiguanzhudianpu', status: 55, "uri": "/pages/order/order" }
 			],
 			currentIndex: 0,
-
-
 		};
 	},
 	methods: {
 		// 添加到methods中
 		getUserProfile() {
-
 			// 直接调用getUserProfile，必须在用户点击事件中直接调用
 			wx.getUserInfo({
 				provider: 'weixin', // 指定微信登录
@@ -303,7 +258,6 @@ export default {
 		tologin() {
 			// 如果没有微信授权，提示用户先授权
 			if (!this.hasWxAuth) {
-				this.$toast("请先点击授权微信登录");
 				return;
 			}
 
@@ -349,168 +303,338 @@ export default {
 </script>
 
 <style lang="scss">
-//@import "../../static/css/iconfont/iconfont.css";
-
 page {
 	background: #f2f2f2;
-}
-
-.btn-hover {
-	background: #f2f2f2 !important;
+	color: #333;
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 .user {
-	.user-wrap {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		height: 50vw;
-		padding: 30rpx;
-		z-index: 9;
-		border-radius: 0 0 20% 20%;
-		background: url('https://handsel.oss-cn-shenzhen.aliyuncs.com/1588938371592.jpg') no-repeat;
-		background-size: cover;
+	position: relative;
+	padding-bottom: 120rpx; /* 留出底部导航栏的空间 */
+}
 
-		.setting {
-			color: #fff;
-			position: absolute;
-			top: 60rpx;
-			left: 60rpx;
-			font-size: 50rpx;
-		}
+/* 头部样式 */
+.user-header {
+	position: relative;
+	padding: 40rpx 30rpx;
+	background: linear-gradient(to bottom, #f2f2f2, #f8f8f8);
+	display: flex;
+	align-items: center;
+}
 
-		.info {
-			position: absolute;
-			text-align: center;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			width: 80%;
+.header-actions {
+	position: absolute;
+	top: 30rpx;
+	right: 30rpx;
+	display: flex;
+	gap: 20rpx;
+}
 
-			/* #ifndef H5 */
-			top: 10%;
+.action-btn {
+	font-size: 36rpx;
+	color: #333;
+}
 
-			/* #endif */
+.avatar-container {
+	margin-right: 20rpx;
+}
 
-			.avatar {
-				width: 150rpx;
-				height: 150rpx;
-				border-radius: 50%;
-				margin-bottom: 15rpx;
-			}
+.avatar {
+	width: 100rpx;
+	height: 100rpx;
+	border-radius: 50%;
+	border: 2rpx solid #e0e0e0;
+	background-color: #f5f5f5;
+}
 
-			.nickname {
-				color: #fff;
-				font-size: 28rpx;
-			}
+.user-info {
+	flex: 1;
+}
 
-			.auth-buttons {
-				margin-top: 10rpx;
-				width: 100%;
-				text-align: center;
+.nickname {
+	font-size: 34rpx;
+	color: #333;
+	font-weight: 500;
+	margin-bottom: 8rpx;
+}
 
-				.auth-btn {
-					background-color: #07c160;
-					color: #fff;
-					font-size: 24rpx;
-					padding: 8rpx 30rpx;
-					border-radius: 30rpx;
-					border: none;
-					line-height: 1.5;
-					height: auto;
-				}
-			}
-		}
-	}
+.user-id {
+	font-size: 24rpx;
+	color: #999;
+}
 
-	.order-status {
-		padding: 0 20rpx;
-		margin-top: -10vw;
+.auth-buttons {
+	margin-top: 10rpx;
+}
 
-		.status-wrap {
-			border-radius: 25rpx;
-			overflow: hidden;
+.auth-btn {
+	background-color: #4a4a4a;
+	color: #fff;
+	font-size: 24rpx;
+	padding: 8rpx 24rpx;
+	border-radius: 30rpx;
+	border: none;
+	line-height: 1.5;
+	height: auto;
+}
 
-			.status-list {
-				display: flex;
-				justify-content: space-evenly;
-				align-items: center;
-				background: #fff;
-				padding-top: 30rpx;
-				padding-bottom: 30rpx;
+/* 统计数据样式 */
+.stats-container {
+	display: flex;
+	justify-content: space-around;
+	padding: 30rpx 0;
+	background-color: #fff;
+	margin-top: 4rpx;
+}
 
-				.status-item {
-					flex: 1;
-					display: flex;
-					flex-direction: column;
-					justify-content: center;
-					align-items: center;
+.stat-item {
+	text-align: center;
+	flex: 1;
+	position: relative;
+}
 
-					.item-icon {
-						line-height: 1;
-						font-size: 65rpx;
-						color: #bbb;
-					}
+.stat-item:not(:last-child):after {
+	content: '';
+	position: absolute;
+	right: 0;
+	top: 20%;
+	height: 60%;
+	width: 1px;
+	background-color: #eee;
+}
 
-					.item-text {
-						font-size: 28rpx;
-						color: #666;
-						margin-top: 5rpx;
-					}
-				}
-			}
-		}
-	}
+.stat-value {
+	font-size: 40rpx;
+	font-weight: bold;
+	margin-bottom: 8rpx;
+	color: #333;
+}
 
-	.com-item {
-		padding-left: 20rpx;
-		padding-right: 20rpx;
-		margin-top: 20rpx;
+.stat-label {
+	font-size: 26rpx;
+	color: #666;
+}
 
-		.com-wrap {
-			border-radius: 25rpx;
-			overflow: hidden;
-		}
-	}
+/* 收益卡片样式 */
+.income-card {
+	margin: 20rpx;
+	background-color: #333;
+	border-radius: 12rpx;
+	padding: 30rpx;
+	color: #fff;
+	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+	position: relative;
+	overflow: hidden;
+}
 
-	.cell {
-		height: 80rpx;
-		padding-left: 20rpx;
-		padding-right: 20rpx;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		background: #fff;
-		border-bottom: 1px solid #f8f8f8;
+.income-card:before {
+	content: '';
+	position: absolute;
+	bottom: -100rpx;
+	right: -100rpx;
+	width: 300rpx;
+	height: 300rpx;
+	background: rgba(255, 255, 255, 0.05);
+	border-radius: 50%;
+}
 
-		&:active {
-			background: #f2f2f2;
-		}
+.income-title {
+	font-size: 30rpx;
+	margin-bottom: 30rpx;
+	font-weight: 500;
+}
 
-		&:last-child {
-			border-bottom: none !important;
-		}
+.income-content {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
 
-		.cell-left {
-			display: flex;
-			align-items: center;
+.income-value {
+	font-size: 48rpx;
+	font-weight: bold;
+}
 
-			.cell-icon {
-				width: 50rpx;
-				height: 50rpx;
-			}
+.withdraw-btn {
+	background-color: #f7e8c6;
+	color: #333;
+	font-size: 26rpx;
+	padding: 10rpx 30rpx;
+	border-radius: 30rpx;
+	border: none;
+	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
 
-			.cell-text {
-				color: #666;
-				font-size: 28rpx;
-				margin-left: 20rpx;
-			}
-		}
+/* 卡片通用样式 */
+.section-card {
+	margin: 20rpx;
+	background-color: #fff;
+	border-radius: 12rpx;
+	overflow: hidden;
+	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
 
-		.iconfont {
-			font-size: 40rpx;
-			color: #999;
-		}
-	}
+.section-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 26rpx 30rpx;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.section-title {
+	font-size: 30rpx;
+	font-weight: 500;
+	color: #333;
+}
+
+.section-more {
+	font-size: 24rpx;
+	color: #999;
+	display: flex;
+	align-items: center;
+}
+
+.arrow-right {
+	font-size: 28rpx;
+	margin-left: 4rpx;
+}
+
+/* 订单图标样式 */
+.order-icons {
+	display: flex;
+	padding: 30rpx 0;
+}
+
+.order-icon-item {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.icon-container {
+	width: 70rpx;
+	height: 70rpx;
+	margin-bottom: 10rpx;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 16rpx;
+	background: #f9f9f9;
+}
+
+.waiting-payment {
+	color: #ff9800;
+}
+
+.waiting-delivery {
+	color: #4caf50;
+}
+
+.completed {
+	color: #2196f3;
+}
+
+.refund {
+	color: #f44336;
+}
+
+.icon {
+	font-size: 36rpx;
+}
+
+.icon-text {
+	font-size: 24rpx;
+	color: #666;
+	margin-top: 6rpx;
+}
+
+/* 工具网格样式 */
+.tools-grid {
+	display: flex;
+	flex-wrap: wrap;
+	padding: 15rpx 0;
+}
+
+.tool-item {
+	width: 25%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 20rpx 0;
+}
+
+.tool-icon {
+	width: 80rpx;
+	height: 80rpx;
+	border-radius: 50%;
+	margin-bottom: 10rpx;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: #f5f5f5;
+	color: #333;
+}
+
+.store-icon { color: #FF9800; }
+.coupon-icon { color: #E91E63; }
+.address-icon { color: #FF5722; }
+.card-icon { color: #4CAF50; }
+.gift-icon { color: #9C27B0; }
+.withdraw-icon { color: #F44336; }
+.performance-icon { color: #2196F3; }
+.activity-icon { color: #3F51B5; }
+
+.tool-icon-text {
+	font-size: 36rpx;
+}
+
+.tool-text {
+	font-size: 24rpx;
+	color: #666;
+}
+
+/* 底部导航栏 */
+.bottom-navbar {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 110rpx;
+	background: #fff;
+	display: flex;
+	box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+	z-index: 100;
+}
+
+.navbar-item {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 10rpx 0;
+}
+
+.navbar-icon {
+	font-size: 24rpx;
+	color: #888;
+	margin-bottom: 4rpx;
+}
+
+.navbar-icon-text {
+	font-size: 40rpx;
+}
+
+.navbar-text {
+	font-size: 24rpx;
+	color: #888;
+}
+
+.navbar-item.active .navbar-icon,
+.navbar-item.active .navbar-text {
+	color: #E91E63;
 }
 </style>

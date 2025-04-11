@@ -104,7 +104,7 @@ var render = function () {
   var _c = _vm._self._c || _h
   var m0 =
     _vm.storeUser.wxHeadImg ||
-    _vm.userInfo.headImg ||
+    _vm.userInfo.avatar ||
     _vm.userInfo.wxHeadImg ||
     _vm.getConst().defaultAvatar
   _vm.$mp.data = Object.assign(
@@ -158,44 +158,6 @@ exports.default = void 0;
 var _defineProperty2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/defineProperty */ 11));
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2.default)(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 //
 //
 //
@@ -474,7 +436,6 @@ var _default = {
     tologin: function tologin() {
       // 如果没有微信授权，提示用户先授权
       if (!this.hasWxAuth) {
-        this.$toast("请先点击授权微信登录");
         return;
       }
       if (this.$isNull(this.userInfo.id) || this.$isNull(this.userInfo.mobile)) {

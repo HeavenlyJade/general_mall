@@ -1,133 +1,304 @@
+@charset "UTF-8";
 page {
   background: #f2f2f2;
+  color: #333;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
-.btn-hover {
-  background: #f2f2f2 !important;
+.user {
+  position: relative;
+  padding-bottom: 120rpx;
+  /* 留出底部导航栏的空间 */
 }
-.user .user-wrap {
+/* 头部样式 */
+.user-header {
+  position: relative;
+  padding: 40rpx 30rpx;
+  background: linear-gradient(to bottom, #f2f2f2, #f8f8f8);
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 50vw;
-  padding: 30rpx;
-  z-index: 9;
-  border-radius: 0 0 20% 20%;
-  background: url("https://handsel.oss-cn-shenzhen.aliyuncs.com/1588938371592.jpg") no-repeat;
-  background-size: cover;
 }
-.user .user-wrap .setting {
-  color: #fff;
+.header-actions {
   position: absolute;
-  top: 60rpx;
-  left: 60rpx;
-  font-size: 50rpx;
-}
-.user .user-wrap .info {
-  position: absolute;
-  text-align: center;
+  top: 30rpx;
+  right: 30rpx;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 80%;
-  top: 10%;
+  gap: 20rpx;
 }
-.user .user-wrap .info .avatar {
-  width: 150rpx;
-  height: 150rpx;
+.action-btn {
+  font-size: 36rpx;
+  color: #333;
+}
+.avatar-container {
+  margin-right: 20rpx;
+}
+.avatar {
+  width: 100rpx;
+  height: 100rpx;
   border-radius: 50%;
-  margin-bottom: 15rpx;
+  border: 2rpx solid #e0e0e0;
+  background-color: #f5f5f5;
 }
-.user .user-wrap .info .nickname {
-  color: #fff;
-  font-size: 28rpx;
+.user-info {
+  flex: 1;
 }
-.user .user-wrap .info .auth-buttons {
+.nickname {
+  font-size: 34rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+}
+.user-id {
+  font-size: 24rpx;
+  color: #999;
+}
+.auth-buttons {
   margin-top: 10rpx;
-  width: 100%;
-  text-align: center;
 }
-.user .user-wrap .info .auth-buttons .auth-btn {
-  background-color: #07c160;
+.auth-btn {
+  background-color: #4a4a4a;
   color: #fff;
   font-size: 24rpx;
-  padding: 8rpx 30rpx;
+  padding: 8rpx 24rpx;
   border-radius: 30rpx;
   border: none;
   line-height: 1.5;
   height: auto;
 }
-.user .order-status {
-  padding: 0 20rpx;
-  margin-top: -10vw;
-}
-.user .order-status .status-wrap {
-  border-radius: 25rpx;
-  overflow: hidden;
-}
-.user .order-status .status-wrap .status-list {
+/* 统计数据样式 */
+.stats-container {
   display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  background: #fff;
-  padding-top: 30rpx;
-  padding-bottom: 30rpx;
+  justify-content: space-around;
+  padding: 30rpx 0;
+  background-color: #fff;
+  margin-top: 4rpx;
 }
-.user .order-status .status-wrap .status-list .status-item {
+.stat-item {
+  text-align: center;
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  position: relative;
 }
-.user .order-status .status-wrap .status-list .status-item .item-icon {
-  line-height: 1;
-  font-size: 65rpx;
-  color: #bbb;
+.stat-item:not(:last-child):after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 20%;
+  height: 60%;
+  width: 1px;
+  background-color: #eee;
 }
-.user .order-status .status-wrap .status-list .status-item .item-text {
-  font-size: 28rpx;
+.stat-value {
+  font-size: 40rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+  color: #333;
+}
+.stat-label {
+  font-size: 26rpx;
   color: #666;
-  margin-top: 5rpx;
 }
-.user .com-item {
-  padding-left: 20rpx;
-  padding-right: 20rpx;
-  margin-top: 20rpx;
-}
-.user .com-item .com-wrap {
-  border-radius: 25rpx;
+/* 收益卡片样式 */
+.income-card {
+  margin: 20rpx;
+  background-color: #333;
+  border-radius: 12rpx;
+  padding: 30rpx;
+  color: #fff;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+  position: relative;
   overflow: hidden;
 }
-.user .cell {
-  height: 80rpx;
-  padding-left: 20rpx;
-  padding-right: 20rpx;
+.income-card:before {
+  content: "";
+  position: absolute;
+  bottom: -100rpx;
+  right: -100rpx;
+  width: 300rpx;
+  height: 300rpx;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+}
+.income-title {
+  font-size: 30rpx;
+  margin-bottom: 30rpx;
+  font-weight: 500;
+}
+.income-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fff;
-  border-bottom: 1px solid #f8f8f8;
 }
-.user .cell:active {
-  background: #f2f2f2;
+.income-value {
+  font-size: 48rpx;
+  font-weight: bold;
 }
-.user .cell:last-child {
-  border-bottom: none !important;
+.withdraw-btn {
+  background-color: #f7e8c6;
+  color: #333;
+  font-size: 26rpx;
+  padding: 10rpx 30rpx;
+  border-radius: 30rpx;
+  border: none;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
-.user .cell .cell-left {
+/* 卡片通用样式 */
+.section-card {
+  margin: 20rpx;
+  background-color: #fff;
+  border-radius: 12rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 26rpx 30rpx;
+  border-bottom: 1px solid #f0f0f0;
+}
+.section-title {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333;
+}
+.section-more {
+  font-size: 24rpx;
+  color: #999;
   display: flex;
   align-items: center;
 }
-.user .cell .cell-left .cell-icon {
-  width: 50rpx;
-  height: 50rpx;
-}
-.user .cell .cell-left .cell-text {
-  color: #666;
+.arrow-right {
   font-size: 28rpx;
-  margin-left: 20rpx;
+  margin-left: 4rpx;
 }
-.user .cell .iconfont {
+/* 订单图标样式 */
+.order-icons {
+  display: flex;
+  padding: 30rpx 0;
+}
+.order-icon-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.icon-container {
+  width: 70rpx;
+  height: 70rpx;
+  margin-bottom: 10rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 16rpx;
+  background: #f9f9f9;
+}
+.waiting-payment {
+  color: #ff9800;
+}
+.waiting-delivery {
+  color: #4caf50;
+}
+.completed {
+  color: #2196f3;
+}
+.refund {
+  color: #f44336;
+}
+.icon {
+  font-size: 36rpx;
+}
+.icon-text {
+  font-size: 24rpx;
+  color: #666;
+  margin-top: 6rpx;
+}
+/* 工具网格样式 */
+.tools-grid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 15rpx 0;
+}
+.tool-item {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 0;
+}
+.tool-icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  margin-bottom: 10rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f5f5f5;
+  color: #333;
+}
+.store-icon {
+  color: #FF9800;
+}
+.coupon-icon {
+  color: #E91E63;
+}
+.address-icon {
+  color: #FF5722;
+}
+.card-icon {
+  color: #4CAF50;
+}
+.gift-icon {
+  color: #9C27B0;
+}
+.withdraw-icon {
+  color: #F44336;
+}
+.performance-icon {
+  color: #2196F3;
+}
+.activity-icon {
+  color: #3F51B5;
+}
+.tool-icon-text {
+  font-size: 36rpx;
+}
+.tool-text {
+  font-size: 24rpx;
+  color: #666;
+}
+/* 底部导航栏 */
+.bottom-navbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 110rpx;
+  background: #fff;
+  display: flex;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+  z-index: 100;
+}
+.navbar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10rpx 0;
+}
+.navbar-icon {
+  font-size: 24rpx;
+  color: #888;
+  margin-bottom: 4rpx;
+}
+.navbar-icon-text {
   font-size: 40rpx;
-  color: #999;
+}
+.navbar-text {
+  font-size: 24rpx;
+  color: #888;
+}
+.navbar-item.active .navbar-icon,
+.navbar-item.active .navbar-text {
+  color: #E91E63;
 }
