@@ -104,7 +104,7 @@ var render = function () {
   var _c = _vm._self._c || _h
   var m0 =
     _vm.storeUser.wxHeadImg ||
-    _vm.userInfo.avatar ||
+    _vm.userInfo.userInfo ||
     _vm.userInfo.wxHeadImg ||
     _vm.getConst().defaultAvatar
   _vm.$mp.data = Object.assign(
@@ -292,20 +292,6 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 var _default = {
   computed: {
     storeUser: function storeUser() {
@@ -321,8 +307,11 @@ var _default = {
       userInfo: {
         //headImg: '/static/img/user/avatar.jpg',
         headImg: '/static/img/user/default-head.png',
-        nickName: 'noname'
+        nickName: 'noname',
+        avatar: '/static/img/user/default-head.png',
+        wxHeadImg: ''
       },
+      headerBgImage: '',
       orderStatusList: [{
         name: '待付款',
         icon: 'iconfont icon31daifukuan',
@@ -400,7 +389,7 @@ var _default = {
                 var userData = result.user_info;
                 userData.wxHeadImg = userData.avatar || userInfo.avatarUrl;
                 userData.wxNickName = userData.nickname || userInfo.nickName;
-
+                console.log("userData", userData);
                 // 保存token
                 _this2.$dataLocal("token", result.access_token);
 
@@ -469,13 +458,25 @@ var _default = {
           this.$store.dispatch("user/update", newUser);
         }
       }
+    },
+    getHeaderBgImage: function getHeaderBgImage() {
+      var _this3 = this;
+      this.$get('/mini_core/banners/by-type/user_bg', {}, function (res) {
+        if (res && res.items && res.items.length > 0) {
+          _this3.headerBgImage = res.items[0].upload_image;
+        }
+      }, function (err) {
+        console.error('获取背景图片失败:', err);
+      });
     }
   },
   onLoad: function onLoad() {
+    this.getuser();
     this.clearLoginStatus();
   },
   onShow: function onShow() {
     this.getuser();
+    this.getHeaderBgImage();
     this.clearLoginStatus();
   }
 };

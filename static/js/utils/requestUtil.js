@@ -184,6 +184,184 @@ Core.prototype.post = function(url, data, onSuccess, onError,is_local_cache=fals
 	})
 
 };
+
+Core.prototype.get = function(url, data, onSuccess, onError, is_local_cache=false, is_mem_cache=false) {
+	return new Promise((resolve, reject) => {
+		
+		var gena_key = function(a,b){
+			let r = "";
+			let a_li = a.split("/");
+			let a_key = a_li[0]+"_"+a_li[1];
+
+			let b_key = "";
+			let havaB = false;
+
+			Object.keys(b || {}).sort().forEach(i => {
+				havaB = true;
+				let b_ite = i+"_"+b[i]+"_";
+				b_key = b_key+b_ite;
+			});
+
+			if(havaB){
+				r = a_key+"__"+b_key;
+			}else{
+				r = a_key;
+			}
+			return r;
+		}
+		
+		var isOk = function(o){
+			if(typeof o == "undefined"){ return false; }
+			if(null == o){ return false; }
+			
+			if(typeof o == "object"){				
+				if(o.code == 200){
+					return true;
+				}else{
+					return false;
+				}		
+			}else {
+				return false;
+			}
+		}
+		
+		let local_key = gena_key(url, data);
+		let local_obj = data_local(local_key);
+		
+		if(is_local_cache){
+			if(isOk(local_obj)){ 
+				console.log("get_data_from_data_local");
+				if (typeof onSuccess == "function") { onSuccess(local_obj); }
+				resolve(local_obj);
+			}
+		}
+		
+		var conf = {};
+		if (url.indexOf("http") == -1) {
+			url = CONFIG.API + url;
+		}
+		
+		conf.url = url;
+		if (data) {
+			conf.data = data;
+		}
+		conf.success = (res) => {
+			if(is_local_cache){
+				data_local(local_key, res.data);
+				if(!!local_obj){
+					return;
+				}       	
+			}	
+			
+			console.log("getdata_by_ajax");
+			
+			if (typeof onSuccess == "function") {
+				onSuccess(res.data);
+			}
+			resolve(res.data);
+		};
+		conf.fail = (res) => {
+			if (typeof onError == "function") { onError(res.data); }
+			reject(res.data);
+		};
+
+		conf.header = {
+			"Content-Type": "application/json",
+			"clientplatform": "xapp"
+		}
+
+		let token = data_local("token");
+		console.log("token",token)
+
+		if (!!token) {
+			conf.header["Authorization"] = "Bearer " +token;
+		}
+
+		conf.method = "GET";
+		return uni.request(conf);
+	});
+};
+
+Core.prototype.put = function(url, data, onSuccess, onError) {
+	return new Promise((resolve, reject) => {
+		var conf = {};
+		if (url.indexOf("http") == -1) {
+			url = CONFIG.API + url;
+		}
+		conf.url = url;
+		if (data) {
+			conf.data = data;
+		}
+		conf.success = (res) => {
+			console.log("put_data_by_ajax");
+			
+			if (typeof onSuccess == "function") {
+				onSuccess(res.data);
+			}
+			resolve(res.data);
+		};
+		conf.fail = (res) => {
+			if (typeof onError == "function") { onError(res.data); }
+			reject(res.data);
+		};
+
+		conf.header = {
+			"Content-Type": "application/json",
+			"clientplatform": "xapp"
+		}
+
+		let token = data_local("token");
+		if (!!token) {
+			conf.header["Authorization"] = token;
+		}
+
+		conf.method = "PUT";
+		return uni.request(conf);
+	});
+};
+
+Core.prototype.delete = function(url, data, onSuccess, onError) {
+	return new Promise((resolve, reject) => {
+		var conf = {};
+		if (url.indexOf("http") == -1) {
+			url = CONFIG.API + url;
+		}
+		conf.url = url;
+		if (data) {
+			conf.data = data;
+		}
+		conf.success = (res) => {
+			console.log("delete_data_by_ajax");
+			
+			if (typeof onSuccess == "function") {
+				onSuccess(res.data);
+			}
+			resolve(res.data);
+		};
+		conf.fail = (res) => {
+			if (typeof onError == "function") { onError(res.data); }
+			reject(res.data);
+		};
+
+		conf.header = {
+			"Content-Type": "application/json",
+			"clientplatform": "xapp"
+		}
+
+		let token = data_local("token");
+		if (!!token) {
+			conf.header["Authorization"] = token;
+		}
+
+		conf.method = "DELETE";
+		return uni.request(conf);
+	});
+};
+
+// 导出方法
+export function get(a,b,c,d,e,f) { return requestUtil.get(a,b,c,d,e,f); }
+export function put(a,b,c,d) { return requestUtil.put(a,b,c,d); }
+export function del(a,b,c,d) { return requestUtil.delete(a,b,c,d); }
 export function post(a,b,c,d,e,f) {return requestUtil.post(a,b,c,d,e,f);}
 
 var requestUtil = new Core();

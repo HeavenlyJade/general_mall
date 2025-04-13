@@ -123,21 +123,11 @@ import uniLoadMore from '@/components/uni-load-more/uni-load-more.vue';
 			empty
 		},
 		data() {
-			let _conf=this.getConst();
-			let _user=this.getUser();
+			let _conf = this.getConst();
+			let _user = this.getUser();
 			
 			return {
-				conf:_conf,
-				
-				logisterMap:_conf.logisterMap,
-				logi_corp:"",
-				logi_no:"",
-				logistics:[],
-				
-
-				
-
-				
+				conf: _conf,
 				tabCurrentIndex: 0,
 				navList: [
 					{
@@ -145,43 +135,30 @@ import uniLoadMore from '@/components/uni-load-more/uni-load-more.vue';
 						text: '全部',
 					},
 					{
-						state: 1,
+						state: '待支付',
 						text: '待付款',
 					},
 					{
-							state: 2,
-							text: '待发货',
-
-						},
+						state: '待发货',
+						text: '待发货',
+					},
 					{
-						state: 3,
+						state: '待收货',
 						text: '待收货',
-
 					},
 					{
-						state: 4,
-						text: '待评价',
-					},
-					{
-						state: 6,
+						state: '已完成',
 						text: '已完成',
-					},
-					/* {
-						state: 5,
-						text: '售后',
-						loadingType: 'more',
-						orderList: []
-					} */
+					}
 				],
-				userInfo:_user,
+				userInfo: _user,
 				
-				cond:{
-					userId:_user.id,
-					pagesize:10,
-					pagefrom:1,
-					stat:""
+				cond: {
+					page: 1,
+					pageSize: 10,
+					status: "" // 订单状态
 				},
-				orderList:[],
+				orderList: [],
 			};
 		},
 		
@@ -210,16 +187,19 @@ import uniLoadMore from '@/components/uni-load-more/uni-load-more.vue';
 
 		},
 		methods: {
-			cancelOrder(e){
-				this.$comfirm("订单还没有支付,确定要删除吗?",cf=>{
-					let o={};o.id=e.id;o.isValid=0;
-					this.$post("order/update",o,res=>{this.$toast("操作成功")});
-				})
-			
+			cancelOrder(e) {
+				this.$comfirm("订单还没有支付,确定要删除吗?", cf => {
+					this.$put(`/mini_core/shop-order/${e.id}/cancel`, {}, res => {
+						this.$toast("取消成功");
+						this.reload_list();
+					});
+				});
 			},
-			comfirm(e){
-				e.stat=4;
-				this.$post("order/update",e,res=>{this.$toast("操作成功")});
+			comfirm(e) {
+				this.$put(`/mini_core/shop-order/${e.id}/confirm`, {}, res => {
+					this.$toast("确认收货成功");
+					this.reload_list();
+				});
 			},
 			topay(item){
 				let order_id=item.id;
@@ -291,75 +271,85 @@ import uniLoadMore from '@/components/uni-load-more/uni-load-more.vue';
 				
 			},
 			
-			getAmount(e){
-				let o=this.getGlistData(e);
-				return o.amount;
+			getAmount(e) {
+				return e.amount - e.benefit + e.postage;
 			},
-			getCount(e){
-				let o=this.getGlistData(e);
-				return o.count;
+			getCount(e) {
+				return e.goodsInfo.reduce((total, item) => total + parseInt(item.buyNum), 0);
 			},
 			
-			getGlistData(e){
-				let sum=0,n=0;			
-				let li=e.goodsInfo;
-				for(let i in li){
-					let ite=li[i];				
-					let m=parseFloat(ite.buyNum)*parseFloat(ite.price);
-					sum+=m;
-					n=n+parseFloat(ite.buyNum);				
+			getBillStat(stat) {
+				switch(stat) {
+					case '待支付':
+						return '待付款';
+					case '待发货':
+						return '待发货';
+					case '待收货':
+						return '待收货';
+					case '已完成':
+						return '已完成';
+					case '已取消':
+						return '已取消';
+					default:
+						return stat || '无状态';
 				}
-				return {"amount":sum,"count":n};
-				
-				
-			},
-			
-			getBillStat(stat){
-				if(stat==1){ return "待付款"}
-				else if(2==stat){return "待发货"}
-				else if(3==stat){return "待收货"}
-				else if(4==stat){return "待评价"}
-				else if(5==stat){return "售后"}
-				else if(6==stat){return "已完成"}
-				else {return "无状态"}
-				
 			},
 
 			
-			set_stat(){
-				this.cond.stat=this.tabCurrentIndex;
-				if(0==this.cond.stat)this.cond.stat="";			
+			set_stat() {
+				this.cond.status = this.tabCurrentIndex;
+				if(0 == this.cond.status) this.cond.status = "";			
 			},
 			
-			reload_list(){
-				this.orderList=[];
-				this.cond.pagefrom=1;
+			reload_list() {
+				this.orderList = [];
+				this.cond.page = 1;
 				this.load_list();
-				
 			},
-			load_list(){
-				
-				this.$post("order/query",this.cond,res=>{
-					let li=res.rows;
-					for(let i in li){
-						let ite=li[i];
-						ite.statName=this.getBillStat(ite.stat);
-						ite.goodsInfo=JSON.parse(ite.goodsDetail);
-						//ite.sku=JSON.parse(ite.goodsDetail).sku;
+			load_list() {
+				this.$get("/mini_core/shop-order", this.cond, res => {
+					if(res && res.data) {
+						let orderList = res.data.map(item => {
+							return {
+								id: item.id,
+								createAt: item.create_time,
+								stat: item.status,
+								statName: item.status,
+								amount: item.actual_amount,
+								benefit: item.discount_amount || 0,
+								postage: item.freight_amount || 0,
+								orderNo: item.order_no,
+								payMethod: item.pay_method,
+								paymentStatus: item.payment_status,
+								deliveryStatus: item.delivery_status,
+								postDetail: JSON.stringify({
+									type: item.delivery_platform,
+									order: item.express_no,
+									company: item.express_company
+								}),
+								// 由于API返回中没有商品列表信息，这里需要根据实际情况调整
+								goodsInfo: [{
+									id: item.id,
+									name: '商品信息', // 需要从其他API获取或调整
+									image: '/static/img/default-goods.png', // 需要设置默认图片
+									price: item.product_amount / item.product_count,
+									buyNum: item.product_count,
+									sku: ''
+								}]
+							};
+						});
 						
-						
+						this.orderList = this.orderList.concat(orderList);
+						this.cond.page++;
 					}
-					
-					
-					this.orderList=this.orderList.concat(li);
-					this.cond.pagefrom++;
-				})
+				}, err => {
+					console.error('获取订单列表失败:', err);
+				});
 			},
 			
 			
-			tabClick(e){
-				//console.log(e);
-				this.tabCurrentIndex=e;			
+			tabClick(e) {
+				this.tabCurrentIndex = e;			
 				this.set_stat();
 				this.reload_list();
 				

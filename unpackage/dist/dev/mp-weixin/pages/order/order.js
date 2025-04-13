@@ -213,44 +213,30 @@ var _default = {
     var _user = this.getUser();
     return {
       conf: _conf,
-      logisterMap: _conf.logisterMap,
-      logi_corp: "",
-      logi_no: "",
-      logistics: [],
       tabCurrentIndex: 0,
       navList: [{
         state: 0,
         text: '全部'
       }, {
-        state: 1,
+        state: '待支付',
         text: '待付款'
       }, {
-        state: 2,
+        state: '待发货',
         text: '待发货'
       }, {
-        state: 3,
+        state: '待收货',
         text: '待收货'
       }, {
-        state: 4,
-        text: '待评价'
-      }, {
-        state: 6,
+        state: '已完成',
         text: '已完成'
-      }
-      /* {
-      	state: 5,
-      	text: '售后',
-      	loadingType: 'more',
-      	orderList: []
-      } */],
-
+      }],
       userInfo: _user,
       cond: {
-        userId: _user.id,
-        pagesize: 10,
-        pagefrom: 1,
-        stat: ""
+        page: 1,
+        pageSize: 10,
+        status: "" // 订单状态
       },
+
       orderList: []
     };
   },
@@ -270,19 +256,17 @@ var _default = {
     cancelOrder: function cancelOrder(e) {
       var _this2 = this;
       this.$comfirm("订单还没有支付,确定要删除吗?", function (cf) {
-        var o = {};
-        o.id = e.id;
-        o.isValid = 0;
-        _this2.$post("order/update", o, function (res) {
-          _this2.$toast("操作成功");
+        _this2.$put("/mini_core/shop-order/".concat(e.id, "/cancel"), {}, function (res) {
+          _this2.$toast("取消成功");
+          _this2.reload_list();
         });
       });
     },
     comfirm: function comfirm(e) {
       var _this3 = this;
-      e.stat = 4;
-      this.$post("order/update", e, function (res) {
-        _this3.$toast("操作成功");
+      this.$put("/mini_core/shop-order/".concat(e.id, "/confirm"), {}, function (res) {
+        _this3.$toast("确认收货成功");
+        _this3.reload_list();
       });
     },
     topay: function topay(item) {
@@ -353,71 +337,81 @@ var _default = {
       this.$navigateTo("/pages/order/return?order_id=" + e.id);
     },
     getAmount: function getAmount(e) {
-      var o = this.getGlistData(e);
-      return o.amount;
+      return e.amount - e.benefit + e.postage;
     },
     getCount: function getCount(e) {
-      var o = this.getGlistData(e);
-      return o.count;
-    },
-    getGlistData: function getGlistData(e) {
-      var sum = 0,
-        n = 0;
-      var li = e.goodsInfo;
-      for (var i in li) {
-        var ite = li[i];
-        var m = parseFloat(ite.buyNum) * parseFloat(ite.price);
-        sum += m;
-        n = n + parseFloat(ite.buyNum);
-      }
-      return {
-        "amount": sum,
-        "count": n
-      };
+      return e.goodsInfo.reduce(function (total, item) {
+        return total + parseInt(item.buyNum);
+      }, 0);
     },
     getBillStat: function getBillStat(stat) {
-      if (stat == 1) {
-        return "待付款";
-      } else if (2 == stat) {
-        return "待发货";
-      } else if (3 == stat) {
-        return "待收货";
-      } else if (4 == stat) {
-        return "待评价";
-      } else if (5 == stat) {
-        return "售后";
-      } else if (6 == stat) {
-        return "已完成";
-      } else {
-        return "无状态";
+      switch (stat) {
+        case '待支付':
+          return '待付款';
+        case '待发货':
+          return '待发货';
+        case '待收货':
+          return '待收货';
+        case '已完成':
+          return '已完成';
+        case '已取消':
+          return '已取消';
+        default:
+          return stat || '无状态';
       }
     },
     set_stat: function set_stat() {
-      this.cond.stat = this.tabCurrentIndex;
-      if (0 == this.cond.stat) this.cond.stat = "";
+      this.cond.status = this.tabCurrentIndex;
+      if (0 == this.cond.status) this.cond.status = "";
     },
     reload_list: function reload_list() {
       this.orderList = [];
-      this.cond.pagefrom = 1;
+      this.cond.page = 1;
       this.load_list();
     },
     load_list: function load_list() {
       var _this5 = this;
-      this.$post("order/query", this.cond, function (res) {
-        var li = res.rows;
-        for (var i in li) {
-          var ite = li[i];
-          ite.statName = _this5.getBillStat(ite.stat);
-          ite.goodsInfo = JSON.parse(ite.goodsDetail);
-          //ite.sku=JSON.parse(ite.goodsDetail).sku;
+      this.$get("/mini_core/shop-order", this.cond, function (res) {
+        if (res && res.data) {
+          var orderList = res.data.map(function (item) {
+            return {
+              id: item.id,
+              createAt: item.create_time,
+              stat: item.status,
+              statName: item.status,
+              amount: item.actual_amount,
+              benefit: item.discount_amount || 0,
+              postage: item.freight_amount || 0,
+              orderNo: item.order_no,
+              payMethod: item.pay_method,
+              paymentStatus: item.payment_status,
+              deliveryStatus: item.delivery_status,
+              postDetail: JSON.stringify({
+                type: item.delivery_platform,
+                order: item.express_no,
+                company: item.express_company
+              }),
+              // 由于API返回中没有商品列表信息，这里需要根据实际情况调整
+              goodsInfo: [{
+                id: item.id,
+                name: '商品信息',
+                // 需要从其他API获取或调整
+                image: '/static/img/default-goods.png',
+                // 需要设置默认图片
+                price: item.product_amount / item.product_count,
+                buyNum: item.product_count,
+                sku: ''
+              }]
+            };
+          });
+          _this5.orderList = _this5.orderList.concat(orderList);
+          _this5.cond.page++;
         }
-
-        _this5.orderList = _this5.orderList.concat(li);
-        _this5.cond.pagefrom++;
+      }, function (err) {
+        console.error('获取订单列表失败:', err);
       });
     },
     tabClick: function tabClick(e) {
-      //console.log(e);
       this.tabCurrentIndex = e;
       this.set_stat();
       this.reload_list();

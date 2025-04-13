@@ -1,15 +1,15 @@
 <template>
 	<view class="user">
 		<!-- 头部 -->
-		<view class="user-header">
+		<view class="user-header" :style="{'background-image': headerBgImage ? `url(${headerBgImage})` : ''}">
 			<view class="avatar-container">
 				<image class="avatar" mode="aspectFill"
-					:src="storeUser.wxHeadImg || userInfo.avatar || userInfo.wxHeadImg || getConst().defaultAvatar">
+					:src="storeUser.wxHeadImg || userInfo.userInfo || userInfo.wxHeadImg || getConst().defaultAvatar">
 				</image>
 			</view>
 			<view class="user-info">
 				<view class="nickname">{{storeUser.wxNickName || userInfo.nickname || userInfo.wxNickName || '未登录'}}</view>
-				<view class="user-id" v-if="userInfo.user_id">ID: {{userInfo.user_id}}</view>
+				<view class="user-id" v-if="userInfo.id">ID: {{userInfo.id}}</view>
 			</view>
 			
 			<!-- 未授权用户显示按钮 -->
@@ -17,18 +17,14 @@
 				<button class="auth-btn" @click="getUserProfile">授权微信登录</button>
 			</view>
 			
-			<!-- 右上角操作按钮 -->
-			<view class="header-actions">
-				<view class="action-btn">•••</view>
-				<view class="action-btn">◯</view>
-			</view>
+	
 		</view>
 		
 		<!-- 统计数据 -->
 		<view class="stats-container">
 			<view class="stat-item">
 				<view class="stat-value">0</view>
-				<view class="stat-label">酒豆</view>
+				<view class="stat-label">积分</view>
 			</view>
 			<view class="stat-item">
 				<view class="stat-value">0</view>
@@ -40,7 +36,7 @@
 			</view>
 		</view>
 		
-		<!-- 可用收益卡片 -->
+				<!-- 可用收益卡片 -->
 		<view class="income-card">
 			<view class="income-title">可用收益</view>
 			<view class="income-content">
@@ -58,27 +54,27 @@
 				</view>
 			</view>
 			<view class="order-icons">
-				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?stat=1')">
-					<view class="icon-container waiting-payment">
-						<text class="icon">󰡷</text>
+				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?stat=待付款')">
+					<view class="tool-icon store-icon">
+						<image src="/static/img/icons/pendi_pay.png" class="tool-icon-image"></image>
 					</view>
 					<text class="icon-text">待付款</text>
 				</view>
-				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?stat=2')">
-					<view class="icon-container waiting-delivery">
-						<text class="icon">󰡸</text>
+				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?stat=待发货')">
+					<view class="tool-icon store-icon">
+						<image src="/static/img/icons/pending_ship.png" class="tool-icon-image"></image>
 					</view>
 					<text class="icon-text">待发货</text>
 				</view>
-				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?stat=3')">
-					<view class="icon-container completed">
-						<text class="icon">󰡹</text>
+				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?stat=已完成')">
+					<view class="tool-icon store-icon">
+						<image src="/static/img/icons/completed.png" class="tool-icon-image"></image>
 					</view>
 					<text class="icon-text">已完成</text>
 				</view>
 				<view class="order-icon-item" @click="$navigateTo('/pages/order/order-refund')">
-					<view class="icon-container refund">
-						<text class="icon">󰡺</text>
+					<view class="tool-icon store-icon">
+						<image src="/static/img/icons/refund_after_sales.png" class="tool-icon-image"></image>
 					</view>
 					<text class="icon-text">退换货</text>
 				</view>
@@ -93,52 +89,42 @@
 			<view class="tools-grid">
 				<view class="tool-item" @click="$navigateTo('/pages/index/guider')">
 					<view class="tool-icon store-icon">
-						<text class="tool-icon-text">󰀵</text>
+						<image src="/static/img/icons/store.png" class="tool-icon-image"></image>
 					</view>
 					<text class="tool-text">全国门店</text>
 				</view>
 				<view class="tool-item" @click="$navigateTo('/pages/user/collect')">
-					<view class="tool-icon coupon-icon">
-						<text class="tool-icon-text">󰀶</text>
+					<view class="tool-icon store-icon">
+						<image src="/static/img/icons/coupon.png" class="tool-icon-image"></image>
 					</view>
 					<text class="tool-text">优惠券</text>
 				</view>
 				<view class="tool-item" @click="$navigateTo('/pages/address/address')">
-					<view class="tool-icon address-icon">
-						<text class="tool-icon-text">󰀷</text>
+					<view class="tool-icon store-icon">
+						<image src="/static/img/icons/address.png" class="tool-icon-image"></image>
 					</view>
 					<text class="tool-text">地址管理</text>
 				</view>
-				<view class="tool-item" @click="$navigateTo('/pages/user/html?key=cfg_com_help')">
-					<view class="tool-icon card-icon">
-						<text class="tool-icon-text">󰀸</text>
-					</view>
-					<text class="tool-text">充值绑卡</text>
-				</view>
+	
 				
 				<view class="tool-item">
-					<view class="tool-icon gift-icon">
-						<text class="tool-icon-text">󰀹</text>
+					<view class="tool-icon store-icon">
+						<image src="/static/img/icons/business_card.png" class="tool-icon-image"></image>
 					</view>
-					<text class="tool-text">我的奖品</text>
+					<text class="tool-text">我的名片</text>
+				</view>
+		
+				<view class="tool-item">
+					<view class="tool-icon store-icon">
+						<image src="/static/img/icons/distribution.png" class="tool-icon-image"></image>
+					</view>
+					<text class="tool-text">我的营收</text>
 				</view>
 				<view class="tool-item">
-					<view class="tool-icon withdraw-icon">
-						<text class="tool-icon-text">󰀺</text>
+					<view class="tool-icon store-icon">
+						<image src="/static/img/icons/personal_Information.png" class="tool-icon-image"></image>
 					</view>
-					<text class="tool-text">提现绑卡</text>
-				</view>
-				<view class="tool-item">
-					<view class="tool-icon performance-icon">
-						<text class="tool-icon-text">󰀻</text>
-					</view>
-					<text class="tool-text">我的业绩</text>
-				</view>
-				<view class="tool-item">
-					<view class="tool-icon activity-icon">
-						<text class="tool-icon-text">󰀼</text>
-					</view>
-					<text class="tool-text">我的活动</text>
+					<text class="tool-text">个人信息</text>
 				</view>
 			</view>
 		</view>
@@ -163,8 +149,11 @@ export default {
 			userInfo: {
 				//headImg: '/static/img/user/avatar.jpg',
 				headImg: '/static/img/user/default-head.png',
-				nickName: 'noname'
+				nickName: 'noname',
+				avatar: '/static/img/user/default-head.png',
+				wxHeadImg: ''
 			},
+			headerBgImage: '',
 			orderStatusList: [
 				{ name: '待付款', icon: 'iconfont icon31daifukuan', status: 10, "uri": "/pages/order/order?stat=1" },
 				{ name: '待发货', icon: 'iconfont icon31daifahuo', status: 30, "uri": "/pages/order/order?stat=2" },
@@ -221,7 +210,7 @@ export default {
 								let userData = result.user_info ;
 								userData.wxHeadImg = userData.avatar || userInfo.avatarUrl;
 								userData.wxNickName = userData.nickname || userInfo.nickName;
-								
+								console.log("userData",userData)
 								// 保存token
 								this.$dataLocal("token", result.access_token);
 								
@@ -290,13 +279,24 @@ export default {
 					this.$store.dispatch("user/update", newUser);
 				}
 			}
+		},
+		getHeaderBgImage() {
+			this.$get('/mini_core/banners/by-type/user_bg', {}, res => {
+				if (res && res.items && res.items.length > 0) {
+					this.headerBgImage = res.items[0].upload_image;
+				}
+			}, err => {
+				console.error('获取背景图片失败:', err);
+			});
 		}
 	},
 	onLoad() {
+		this.getuser();
 		this.clearLoginStatus();
 	},
 	onShow() {
 		this.getuser();
+		this.getHeaderBgImage();
 		this.clearLoginStatus();
 	}
 };
@@ -311,28 +311,31 @@ page {
 
 .user {
 	position: relative;
-	padding-bottom: 120rpx; /* 留出底部导航栏的空间 */
 }
 
 /* 头部样式 */
 .user-header {
 	position: relative;
-	padding: 40rpx 30rpx;
-	background: linear-gradient(to bottom, #f2f2f2, #f8f8f8);
+	padding: 31px 15px 20px; /* 按照截图中显示的31px 15px 20px */
+	background: #F5F5F5; /* 使用截图中的背景色 */
 	display: flex;
 	align-items: center;
+	margin-bottom: 2rpx;
+	height: 200px; /* 截图中显示的总高度 */
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .header-actions {
 	position: absolute;
-	top: 30rpx;
-	right: 30rpx;
+	top: 20px;
+	right: 20px;
 	display: flex;
-	gap: 20rpx;
+	gap: 15px;
 }
 
 .action-btn {
-	font-size: 36rpx;
+	font-size: 32rpx;
 	color: #333;
 }
 
@@ -341,11 +344,10 @@ page {
 }
 
 .avatar {
-	width: 100rpx;
-	height: 100rpx;
+	width: 70rpx;
+	height: 70rpx;
 	border-radius: 50%;
-	border: 2rpx solid #e0e0e0;
-	background-color: #f5f5f5;
+	background-color: #e0e0e0;
 }
 
 .user-info {
@@ -353,10 +355,10 @@ page {
 }
 
 .nickname {
-	font-size: 34rpx;
+	font-size: 28rpx;
 	color: #333;
-	font-weight: 500;
-	margin-bottom: 8rpx;
+	font-weight: normal;
+	margin-bottom: 4rpx;
 }
 
 .user-id {
@@ -383,9 +385,9 @@ page {
 .stats-container {
 	display: flex;
 	justify-content: space-around;
-	padding: 30rpx 0;
+	padding: 20rpx 0;
 	background-color: #fff;
-	margin-top: 4rpx;
+	border-bottom: 1px solid #eee;
 }
 
 .stat-item {
@@ -418,61 +420,58 @@ page {
 
 /* 收益卡片样式 */
 .income-card {
-	margin: 20rpx;
-	background-color: #333;
-	border-radius: 12rpx;
-	padding: 30rpx;
-	color: #fff;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
-	position: relative;
-	overflow: hidden;
+  margin: 20rpx;
+  background-color: #333;
+  border-radius: 12rpx;
+  padding: 30rpx;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.05)" d="M0,224L60,197.3C120,171,240,117,360,112C480,107,600,149,720,186.7C840,224,960,256,1080,261.3C1200,267,1320,245,1380,234.7L1440,224L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path></svg>');
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 100%;
 }
-
-.income-card:before {
-	content: '';
-	position: absolute;
-	bottom: -100rpx;
-	right: -100rpx;
-	width: 300rpx;
-	height: 300rpx;
-	background: rgba(255, 255, 255, 0.05);
-	border-radius: 50%;
-}
-
 .income-title {
-	font-size: 30rpx;
-	margin-bottom: 30rpx;
-	font-weight: 500;
+  font-size: 30rpx;
+  margin-bottom: 30rpx;
+  font-weight: normal;
 }
-
 .income-content {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 .income-value {
-	font-size: 48rpx;
-	font-weight: bold;
+  font-size: 48rpx;
+  font-weight: bold;
+  flex: 1;
 }
 
+
 .withdraw-btn {
-	background-color: #f7e8c6;
-	color: #333;
-	font-size: 26rpx;
-	padding: 10rpx 30rpx;
-	border-radius: 30rpx;
-	border: none;
-	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  background-color: #f7e8c6;
+  color: #333;
+  font-size: 26rpx;
+  padding: 10rpx 30rpx;
+  border-radius: 30rpx;
+  border: none;
+  margin-left: auto;
+}
+
+.income-title, .income-content {
+	position: relative;
+	z-index: 2;
 }
 
 /* 卡片通用样式 */
 .section-card {
-	margin: 20rpx;
+	margin: 20rpx 0 0 0;
 	background-color: #fff;
-	border-radius: 12rpx;
-	overflow: hidden;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+	border-radius: 0;
+	box-shadow: none;
 }
 
 .section-header {
@@ -521,8 +520,8 @@ page {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	border-radius: 16rpx;
-	background: #f9f9f9;
+	border-radius: 0;
+	background: transparent;
 }
 
 .waiting-payment {
@@ -569,13 +568,18 @@ page {
 .tool-icon {
 	width: 80rpx;
 	height: 80rpx;
-	border-radius: 50%;
+	border-radius: 0;
 	margin-bottom: 10rpx;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	background: #f5f5f5;
+	background: transparent;
 	color: #333;
+}
+
+.tool-icon-image {
+	width: 40rpx;
+	height: 40rpx;
 }
 
 .store-icon { color: #FF9800; }

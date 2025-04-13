@@ -11421,7 +11421,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+exports.del = del;
+exports.get = get;
 exports.post = post;
+exports.put = put;
 var _typeof2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/typeof */ 13));
 var _cacheUtil = __webpack_require__(/*! ./cacheUtil.js */ 35);
 var _constant = _interopRequireDefault(__webpack_require__(/*! ../data/constant.js */ 34));
@@ -11589,6 +11592,177 @@ Core.prototype.post = function (url, data, onSuccess, onError) {
     return uni.request(conf);
   });
 };
+Core.prototype.get = function (url, data, onSuccess, onError) {
+  var is_local_cache = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+  var is_mem_cache = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
+  return new Promise(function (resolve, reject) {
+    var gena_key = function gena_key(a, b) {
+      var r = "";
+      var a_li = a.split("/");
+      var a_key = a_li[0] + "_" + a_li[1];
+      var b_key = "";
+      var havaB = false;
+      Object.keys(b || {}).sort().forEach(function (i) {
+        havaB = true;
+        var b_ite = i + "_" + b[i] + "_";
+        b_key = b_key + b_ite;
+      });
+      if (havaB) {
+        r = a_key + "__" + b_key;
+      } else {
+        r = a_key;
+      }
+      return r;
+    };
+    var isOk = function isOk(o) {
+      if (typeof o == "undefined") {
+        return false;
+      }
+      if (null == o) {
+        return false;
+      }
+      if ((0, _typeof2.default)(o) == "object") {
+        if (o.code == 200) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    };
+    var local_key = gena_key(url, data);
+    var local_obj = (0, _cacheUtil.data_local)(local_key);
+    if (is_local_cache) {
+      if (isOk(local_obj)) {
+        console.log("get_data_from_data_local");
+        if (typeof onSuccess == "function") {
+          onSuccess(local_obj);
+        }
+        resolve(local_obj);
+      }
+    }
+    var conf = {};
+    if (url.indexOf("http") == -1) {
+      url = _constant.default.API + url;
+    }
+    conf.url = url;
+    if (data) {
+      conf.data = data;
+    }
+    conf.success = function (res) {
+      if (is_local_cache) {
+        (0, _cacheUtil.data_local)(local_key, res.data);
+        if (!!local_obj) {
+          return;
+        }
+      }
+      console.log("getdata_by_ajax");
+      if (typeof onSuccess == "function") {
+        onSuccess(res.data);
+      }
+      resolve(res.data);
+    };
+    conf.fail = function (res) {
+      if (typeof onError == "function") {
+        onError(res.data);
+      }
+      reject(res.data);
+    };
+    conf.header = {
+      "Content-Type": "application/json",
+      "clientplatform": "xapp"
+    };
+    var token = (0, _cacheUtil.data_local)("token");
+    console.log("token", token);
+    if (!!token) {
+      conf.header["Authorization"] = "Bearer " + token;
+    }
+    conf.method = "GET";
+    return uni.request(conf);
+  });
+};
+Core.prototype.put = function (url, data, onSuccess, onError) {
+  return new Promise(function (resolve, reject) {
+    var conf = {};
+    if (url.indexOf("http") == -1) {
+      url = _constant.default.API + url;
+    }
+    conf.url = url;
+    if (data) {
+      conf.data = data;
+    }
+    conf.success = function (res) {
+      console.log("put_data_by_ajax");
+      if (typeof onSuccess == "function") {
+        onSuccess(res.data);
+      }
+      resolve(res.data);
+    };
+    conf.fail = function (res) {
+      if (typeof onError == "function") {
+        onError(res.data);
+      }
+      reject(res.data);
+    };
+    conf.header = {
+      "Content-Type": "application/json",
+      "clientplatform": "xapp"
+    };
+    var token = (0, _cacheUtil.data_local)("token");
+    if (!!token) {
+      conf.header["Authorization"] = token;
+    }
+    conf.method = "PUT";
+    return uni.request(conf);
+  });
+};
+Core.prototype.delete = function (url, data, onSuccess, onError) {
+  return new Promise(function (resolve, reject) {
+    var conf = {};
+    if (url.indexOf("http") == -1) {
+      url = _constant.default.API + url;
+    }
+    conf.url = url;
+    if (data) {
+      conf.data = data;
+    }
+    conf.success = function (res) {
+      console.log("delete_data_by_ajax");
+      if (typeof onSuccess == "function") {
+        onSuccess(res.data);
+      }
+      resolve(res.data);
+    };
+    conf.fail = function (res) {
+      if (typeof onError == "function") {
+        onError(res.data);
+      }
+      reject(res.data);
+    };
+    conf.header = {
+      "Content-Type": "application/json",
+      "clientplatform": "xapp"
+    };
+    var token = (0, _cacheUtil.data_local)("token");
+    if (!!token) {
+      conf.header["Authorization"] = token;
+    }
+    conf.method = "DELETE";
+    return uni.request(conf);
+  });
+};
+
+// 导出方法
+function get(a, b, c, d, e, f) {
+  return requestUtil.get(a, b, c, d, e, f);
+}
+function put(a, b, c, d) {
+  return requestUtil.put(a, b, c, d);
+}
+function del(a, b, c, d) {
+  return requestUtil.delete(a, b, c, d);
+}
 function post(a, b, c, d, e, f) {
   return requestUtil.post(a, b, c, d, e, f);
 }

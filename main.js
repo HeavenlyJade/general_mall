@@ -87,6 +87,9 @@ Vue.prototype.$getDateParam = dateUtil.getDateParam;
 
 import requestUtil from "./static/js/utils/requestUtil.js"
 Vue.prototype.$post = requestUtil.post;
+Vue.prototype.$get = requestUtil.get;
+Vue.prototype.$put = requestUtil.put;
+Vue.prototype.$delete = requestUtil.delete;
 Vue.prototype.$upload = requestUtil.upLoad;
 Vue.prototype.$chooseImageUpload = requestUtil.choose_image_upload;
 
