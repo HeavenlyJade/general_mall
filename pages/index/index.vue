@@ -1,373 +1,338 @@
 <template>
 	<view class="page">
-	 <!-- <box-search :placeholder="'输入关键词搜索'" @search="tosearch"></box-search> -->
-
-	  
-	  <view class="ps-re w100p h70vw" >
-	  	<swiper class="w100p h100p" circular="true" autoplay="true">
-	  		<swiper-item class="w100p h100p" v-for="(ite,idx) in carouselList"  :key="idx" @click="navToBannerPage(ite)">
-	  			<image  class="w100p h100p" :src="ite.pic"></image>
-	  		</swiper-item>
-	  
-	  	</swiper>
-	  	
-				
-	  </view>
-	  
-
-	  
-	  <view style="margin-top: 1rem;" class="center98 flex wrap">
-		  <view class="w20p flex-col m-center c-center" style="height: 5rem;" @click="tocatelist(item)" v-for="(item,index) in categoryList" :key="index">		 
-			<image class="w66p h70p " style="border-radius: 50%;" :src="item.image"  />
-			<text class="w80p h30p  flex m-center c555" style="margin-top: 0.4rem; font-size:12px;">{{item.name}}</text>		  
-		  </view>		  
-	  </view>
-	  
-	  <view class="center92 flex" style="margin-top: 0.6rem;height: 9.6rem;">
-		  <view class="h100p w44p flex m-center c-center" @click="toaclist(activity1)">
-			  <view class="w97p h97p brrr2dr" >
-				  <image :src="activity1.image" class="w100p h100p" />
-			  </view>
-			  
-		  </view>
-		  
-		  <view class="h100p w56p">
-			  <view class="w100p h50p flex m-center c-center" @click="toaclist(activity2)">
-				   <view class="w97p h97p brrr2dr" >
-					   <image :src="activity2.image" class="w100p h100p" />
-					   
-				   </view>
-			  </view>
-			  
-			  <view class="w100p h50p flex m-center c-center" @click="toaclist(activity3)">
-				   <view class="w97p h97p brrr2dr" >
-					   <image :src="activity3.image" class="w100p h100p" />
-					   
-				   </view>
-			  </view>
-			  
-		  </view>
-		  
-	  </view>
-	  
-	  
-
-	  <view class="center92 flex brrr3dr" style="height: 7rem; margin-top: 0.6rem; " @click="navToBannerPage(adList[0])">
-	  		  <image class="w100p h100p brrr3dr" :src="adList[0].pic" />
-	  </view>
-	  
-	  
-	  <view class="w100p flex c-center m-center ps-re" style="height: 3rem; margin-top: 0.6rem;">
-	  	<image src="../../static/img/shop/shop/guess.png" class="w100p h100p"></image>
-	  	
-	  	<view class="flex c-center m-center ps-ab fs9dr">为你推荐</view>
-	  </view>
-	  
-	 <!-- <view class="center92 flex c-center" style="margin-top: 0.8rem; height: 2rem">
-		  <image src="../../static/img/index/index/goods.png" style="width:  1.6rem ; height: 1.6rem;" />
-		  
-		  <view class="h100p flex-col" style="margin-left: 0.4rem;">
-			  <view class="h70p fs1r">新品上市</view>
-			  <view class="h30p fs7dr caaa" style="margin-top: -0.2rem;">new goods saling</view>
-		  </view>
-		  
-	  </view> -->
-	
-        <!-- <view class="center94 flex m-sb wrap" style="align-content: flex-start; ">
-			<view class="w48p " style="height:13rem; margin-top: 0.5rem;" v-for="(item,index) in goodsList" :key="index" @click="todetail(item)">
-				<view class="w100p h80p">
-					<image :src="item.image" class="w100p h100p" style="border-top-left-radius: 0.2rem;" />
-				</view>
-				
-				<view class="w100p h10p fs9dr"><view class="name ">{{item.name}}</view></view>
-				<view class="w100p h10p" style="margin-top: 0.4rem;">
-				<span class="decoration">￥{{item.prePrice}},</span>
-				<span class="price_count" >会员价:￥{{item.price}}</span>
-				
-	            </view>
-				
-			</view>		
-		</view> -->
-		
-		<view class="center94 flex m-sb wrap" style="align-content: flex-start; margin-top: 0.2rem;">
-			<view class="w48p " style="height:auto; margin-top: 1.5rem;" v-for="(item,index) in goodsList" :key="index" @click="todetail(item)">
-				<view class="w100p ">
-					<image :src="item.image" class="w100p h48vw"  />
-				</view>
-				
-				<view class="w100p  fs1r" style="height: 2.5rem;">
-					<view class="name h100p" style="font-size: 12px; overflow:hidden;">{{$endwith(item.name,28)}}</view>
-				</view>
-				<view class="center96  flex m-sb" style="margin-top: 0;">
-					<span class="price">￥{{item.prePrice==0?item.price:item.prePrice}}</span>
-					<span class="sale-num" >销量{{item.saleNum||'0'}}件</span>
-				
-		        </view>
-				
-			</view>		
-		</view>
-		
-		
-		<view style="height: 2rem;">
-			
+		<!-- 顶部banner -->
+		<view class="video-banner">
+			<image :src="bannerImage" mode="aspectFill" class="w100p h100p"/>
 		</view>
 
-		
-		<!-- #ifdef MP-WEIXIN --> <!-- 微信小程序鉴权 -->
-		
-		<mp-wxauth ignore="getPhoneNumber"></mp-wxauth>
-		<mp-tplreq ></mp-tplreq>
-		
-		<!-- #endif -->
-		
-		
-	</view> 
+		<!-- 品牌介绍和产品系列组合 -->
+		<view class="category-section" v-for="(item, index) in categoryList" :key="item.id">
+			<!-- 品牌介绍 -->
+			<view class="brand-intro">
+				<view class="brand-content" :style="{'background-image': `url(${item.icon})`}">
+					<view class="content-overlay">
+						<view class="text-container">
+							<!-- <view class="title">{{item.name}}</view> -->
+							<rich-text :nodes="item.content"></rich-text>
+						</view>
+					</view>
+				</view>
+			</view>
+
+			<!-- 对应的产品系列 -->
+			<view class="product-grid">
+				<view class="product-item" 
+					  v-for="product in productList[item.id]" 
+					  :key="product.id" 
+					  @click="todetail(product)">
+					<image :src="getFirstImage(product.images)" mode="aspectFill"/>
+					<view class="product-info">
+						<view class="name">{{product.name}}</view>
+						<view class="sub-name">{{product.alias}}</view>
+					</view>
+				</view>
+			</view>
+		</view>
+
+
+	</view>
 </template>
 
-<script> 
-  
-  	export default {  
-          components:{   
-  			 
-  		},
-  		data() {
-		
-  			return {
-		
-  				carouselList:[{"pic":""}],
-  				categoryList:[],
-  				
-  				adList:[{"pic":""}],
-  				
-  				
-  				
-  				activity1:{},
-  				activity2:{},
-  				activity3:{},
-  				
-  				
-  				cond:{
-  					pagefrom:"",
-  					pagesize:10,
-  				},
-  				goodsList:[],
-  
-  			};
-  		},
-  		
-  		onNavigationBarSearchInputClicked: async function(e) {
-  			//this.$api.msg('点击了搜索框');
-  			
-  			this.$navigateTo(`/pages/goods/HM-search`);
-  		},
-  		//点击导航栏 buttons 时触发
-  		onNavigationBarButtonTap(e) {
-  			console.log(e);
-  			const index = e.index;
-  			if (index === 0) {
-  		
-  				this.$navigateTo('/pages/index/notice');
-  			} else if (index === 1) {
-  				
-  			}
-  		},
-		onReachBottom() {
-			uni.showLoading({"title":"加载中"});
-			setTimeout(this.getProudctList,500);
-		},
-  		onShow() {
-  			
-			
-			
-  		},
-  		onLoad() {
-			let _this=this;
-			this.initConfig(function(a,b){
-				_this.carouselList=b.cfg_mall_banner;
-				_this.adList=b.cfg_mall_fixed;
-				
-				_this.loadCateList();;
-				
-				_this.wxLogin(res=>{
-					_this.$store.dispatch("user/update",res.data);
-				});
-
-				_this.reloadProductList();
+<script>
+export default {
+	data() {
+		return {
+			categoryList: [],
+			productList: {},
+			bannerImage: ''
+		}
+	},
+	onLoad() {
+		this.loadBannerData()
+		this.loadCategoryData()
+	},
+	onShow() {
+		this.loadBannerData()
+		this.loadCategoryData()
+	},
+	methods: {
+		loadBannerData() {
+			this.$get('/mini_core/banners/by-type/index_bg', {}, res => {
+				if(  res.items) {
+					this.bannerImage = res.items[0].upload_image
+				}
 			})
+		},
+		loadCategoryData() {
+			this.$get('/mini_core/product-category', {
+				page: 1,
+				size: 10,
+				type: 'index'
+			}, res => {
+				if(res.code === 200) {
+					this.categoryList = res.data
+					// 为每个分类加载产品
+					this.categoryList.forEach(category => {
+						this.loadProducts(category.id)
+					})
+				}
+			}, null, true)
+		},
+		loadProducts(categoryId) {
+			// 初始化产品列表对象
+			if(!this.productList[categoryId]) {
+				this.$set(this.productList, categoryId, [])
+			}
 			
-		
-  			this.load_ac1();
-  			this.load_ac2();
-  			this.load_ac3();
-  			
-
-  		},
-  		methods: {
-  			
-  			navToBannerPage(item){
-  				if(item.type==="type3"){				
-  					let o={};
-  					o.image=item.url;
-  					o.describe="";
-  					//o.style="width:10rem;height:10rem"
-  					
-  					this.$dataLocal("show_img_param",o);
-  					this.$navigateTo("/pages/common/show-img")
-  					
-  				}else if(item.type==="type2"){
-  					this.$navigateTo(item.url)
-  			
-  				}else{// if(item.type==="type1")
-				
-				this.$jumpExter(item.url);
-				}  				
-  			},
-  			
-  			toaclist(e){
-  				if(this.$notNull(e.goodsNum)&&e.goodsNum>1){								
-  					let uri="/pages/goods/goods-list?acid="+e.id+"&name="+e.name;
-  					this.$navigateTo(uri);
-  					
-  				}else{
-  					this.$post("goods/query",{"activityId":e.id},res=>{
-						let li=res.rows;
-						if(!!li&&li.length>0){
-							this.todetail(li[0]);
-						}else{
-							this.$toast("还没有商品参与该活动")
-						}
-  						
-  					})
-  					
-  					
-  				}
-  				
-  			},
-  			
-  			load_ac1(){
-  				this.$post("activity/find",{"id":1},res=>{ 
-  					let data=res.data;
-  					let img_list=[];
-  					if(!!data.imageList)img_list=JSON.parse(data.imageList);
-  					
-  					data.image=img_list[0];
-  					
-  					this.activity1=data;
-  				})
-  				
-  			},
-  			load_ac2(){
-  				this.$post("activity/find",{"id":2},res=>{
-  					
-  					let data=res.data;
-  					let img_list=[];
-  					if(!!data.imageList)img_list=JSON.parse(data.imageList);
-  					
-  					data.image=img_list[0];
-  					
-  					this.activity2=data;
-  				})
-  				
-  			},
-  			
-  			load_ac3(){
-  				this.$post("activity/find",{"id":3},res=>{
-  					
-  					let data=res.data;
-  					let img_list=[];
-  					if(!!data.imageList)img_list=JSON.parse(data.imageList);
-  					
-  					data.image=img_list[0];
-  					
-  					this.activity3=data;
-  				})
-  				
-  			},
-  			
-  			todetail(e){
-  				let id = e.id;
-  				let url=`/pages/goods/detail?id=${id}`
-  				this.$navigateTo(url);
-  			},
-  			
-  			tocatelist(e){
-  				
-  				let cur_cate=e;
-  				let uri='/pages/goods/goods-list?cid=' + cur_cate.id + '&name=' + cur_cate.name;
-  				//console.log(uri);
-  				this.$navigateTo(uri);
-  			
-  				
-  			},
-
-  
-  			
-  			reloadProductList(){
-  				this.cond.pagefrom=1;
-  				this.goodsList=[],
-  				this.getProudctList();
-  			},
-  			getProudctList(){
-  				var o={}
-  				o.pagefrom=this.cond.pagefrom;
-  				o.pagesize=this.cond.pagesize;
-  				//o.types="1,11";
-  				o.desc="sortLevel";
-  				o.isUp=1;
-  				var that=this;
-  				this.$post("goods/query",o,function(res){
-  					var li=res.rows;
-  					for(var i in li){
-  						var item=li[i];					
-  						 item.image=that.getLi(item.imageList)[0]||that.getConst("").default_img;
-  					}
-  			
-  					that.goodsList=that.goodsList.concat(li);
-					uni.hideLoading();
-  					if(li.length>0){
-  						that.cond.pagefrom=that.cond.pagefrom+1;
-  					}
-  				})			
-  			},
-  			
-  			loadCateList(){
-  				var o={};
-  				o.level=1; o.grade=1;
-  				o.stat=1;
-  				o.desc="sortLevel";
-  				var _this=this;
-  				this.$post("goodscate/query",o,function(res){
-  					var li=res.rows;
-  					_this.categoryList=li;
-  				})
-  				
-  			},
-  			
-  			tosearch(e){
-  				console.log(e);  
-  			}
-  
-  		}
-  	}
+			this.$get('/mini_core/shop-product', {
+				page: 1,
+				size: 4,
+				need_total_count: true,
+				category_id: categoryId
+			}, res => {
+				if(res.code === 200) {
+					// 将产品数据存储到对应分类ID下
+					this.$set(this.productList, categoryId, res.data)
+				}
+			})
+		},
+		getFirstImage(images) {
+			try {
+			
+				return images[0] || ''
+			} catch(e) {
+				return ''
+			}
+		},
+		todetail(item) {
+			let id = item.id
+			let url = `/pages/goods/detail?id=${id}`
+			this.$navigateTo(url)
+		},
+		toWholesale() {
+			this.$navigateTo('/pages/wholesale/index')
+		}
+	}
+}
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+.page {
+	background: #f5f5f5;
+	min-height: 100vh;
+}
 
+.video-banner {
+	position: relative;
+	width: 100%;
+	height: 400rpx;
+	background: #fff;
 	
-	.name{
-			font-size: 26upx;
-			color: #555;
-		}
-		
-	.sale-num{
-			 color:#bbbbbb;
-			 font-size:14px;
-			 
-		}
-		
-		.price{
-			 color:#fa436a;
-			 font-size:14px
-		}
+	image {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+}
+
+.brand-intro {
+	margin: 20rpx;
 	
+	.brand-content {
+		position: relative;
+		width: 100%;
+		height: 180rpx;
+		background-size: cover;
+		background-position: center;
+		background-repeat: no-repeat;
+		border-radius: 20rpx;
+		overflow: hidden;
+		
+		.content-overlay {
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			
+			.text-container {
+				width: 70%;
+				padding: 20rpx 30rpx;
+				text-align: center;
+				
+				:deep(rich-text) {
+					font-size: 24rpx;
+					color: #333;
+					line-height: 1.6;
+					
+					div {
+						margin-bottom: 4rpx;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						display: -webkit-box;
+						-webkit-line-clamp: 2;
+						-webkit-box-orient: vertical;
+						
+						strong {
+							display: block;
+							font-size: 28rpx;
+							margin-bottom: 8rpx;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+.product-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 30rpx;
+	padding: 20rpx 40rpx;
+
+	.product-item {
+		position: relative;
+		height: 460rpx;
+		width: 280rpx;
+		margin: 0 auto;
+		background: #f8f8f8;
+		border-radius: 16rpx;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 20rpx;
+		box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+
+		image {
+			width: 220rpx;
+			height: 380rpx;
+			object-fit: contain;
+			margin-bottom: 20rpx;
+		}
+
+		.product-info {
+			position: relative;
+			width: 100%;
+			text-align: center;
+			padding: 10rpx;
+			bottom: auto;
+			left: auto;
+			transform: none;
+			background: none;
+
+			.name {
+				font-size: 28rpx;
+				color: #333;
+				font-weight: 500;
+				margin-bottom: 6rpx;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.sub-name {
+				font-size: 24rpx;
+				color: #666;
+			}
+		}
+	}
+}
+
+.collection-series {
+	display: flex;
+	padding: 20rpx;
+	gap: 20rpx;
+
+	.collection-item {
+		flex: 1;
+		height: 500rpx;
+		position: relative;
+		border-radius: 12rpx;
+		overflow: hidden;
+
+		image {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+		.collection-info {
+			position: absolute;
+			left: 20rpx;
+			top: 20rpx;
+			color: #0066cc;
+
+			.name {
+				font-size: 40rpx;
+				font-weight: bold;
+			}
+
+			.sub-name {
+				font-size: 28rpx;
+			}
+		}
+	}
+}
+
+.wholesale-section {
+	padding: 40rpx 30rpx;
+	background: #fff;
+
+	.title {
+		font-size: 36rpx;
+		text-align: center;
+		margin-bottom: 20rpx;
+	}
+
+	.desc {
+		font-size: 26rpx;
+		color: #666;
+		text-align: center;
+		margin-bottom: 30rpx;
+		line-height: 1.6;
+	}
+
+	.wholesale-banner {
+		position: relative;
+		height: 300rpx;
+		border-radius: 12rpx;
+		overflow: hidden;
+
+		image {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+		.banner-text {
+			position: absolute;
+			left: 40rpx;
+			top: 40rpx;
+			color: #d81e06;
+			font-size: 40rpx;
+			font-weight: bold;
+		}
+
+		.sub-text {
+			position: absolute;
+			left: 40rpx;
+			top: 100rpx;
+			color: #333;
+			font-size: 28rpx;
+		}
+	}
+}
+
+.category-section {
+	margin-bottom: 40rpx;
+	
+	.brand-intro {
+		margin: 20rpx;
+	}
+}
 </style>

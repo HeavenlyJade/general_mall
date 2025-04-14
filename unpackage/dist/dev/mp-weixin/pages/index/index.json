@@ -1,8 +1,5 @@
 {
   "navigationBarTitleText": "",
   "navigationStyle": "custom",
-  "usingComponents": {
-    "mp-wxauth": "/components/mp-wxauth/mp-wxauth",
-    "mp-tplreq": "/components/mp-tplreq/mp-tplreq"
-  }
+  "usingComponents": {}
 }

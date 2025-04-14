@@ -3,6 +3,22 @@ import {data_local} from "./cacheUtil.js"
 
 import CONFIG from "../data/constant.js"
 
+// 全局函数处理401未授权
+function handleUnauthorized() {
+	console.log("收到401响应，清除登录状态并跳转");
+	// 清除token
+	data_local("token", "");
+	// 清除用户数据
+	data_local("user_info", null);
+	
+	// 确保UI操作在主线程完成后执行
+	setTimeout(() => {
+		uni.reLaunch({
+			url: '/pages/user/user'
+		});
+	}, 100);
+}
+
 function Core() {
 
 }
@@ -82,10 +98,6 @@ Core.prototype.upload_img = function(img_list, callback) {
 		})
 	}
 
-
-
-
-
 Core.prototype.post = function(url, data, onSuccess, onError,is_local_cache=false,is_mem_cache=false) {
 	return new Promise((resolve, reject) => {
 		
@@ -150,6 +162,12 @@ Core.prototype.post = function(url, data, onSuccess, onError,is_local_cache=fals
 			conf.data = data
 		}
 		conf.success = (res) => {
+			// 检查返回的数据中的code是否为401
+			if(res.data && res.data.code === 401) {
+				handleUnauthorized();
+				return;
+			}
+			
 			if(is_local_cache){
 				data_local(local_key, res.data);
 				if(!!local_obj){
@@ -165,7 +183,15 @@ Core.prototype.post = function(url, data, onSuccess, onError,is_local_cache=fals
 			resolve(res.data);
 		};
 		conf.fail = (res) => {
-			if (typeof onError == "function") {onError(res.data);}
+			// 检查错误响应状态码
+			if(res.statusCode === 401) {
+				handleUnauthorized();
+				return;
+			}
+			
+			if (typeof onError == "function") {
+				onError(res.data);
+			}
 			reject(res.data)
 		};
 
@@ -246,6 +272,17 @@ Core.prototype.get = function(url, data, onSuccess, onError, is_local_cache=fals
 			conf.data = data;
 		}
 		conf.success = (res) => {
+			console.log(111,res);
+			// 检查返回的数据中的code是否为401
+			if　(res.statusCode ===401){
+				handleUnauthorized();
+				return;
+			}
+			if(res.data && res.data.code === 401) {
+				handleUnauthorized();
+				return;
+			}
+			
 			if(is_local_cache){
 				data_local(local_key, res.data);
 				if(!!local_obj){
@@ -261,7 +298,15 @@ Core.prototype.get = function(url, data, onSuccess, onError, is_local_cache=fals
 			resolve(res.data);
 		};
 		conf.fail = (res) => {
-			if (typeof onError == "function") { onError(res.data); }
+			// 检查错误响应状态码
+			if(res.statusCode === 401) {
+				handleUnauthorized();
+				return;
+			}
+			
+			if (typeof onError == "function") {
+				onError(res.data);
+			}
 			reject(res.data);
 		};
 
@@ -271,7 +316,6 @@ Core.prototype.get = function(url, data, onSuccess, onError, is_local_cache=fals
 		}
 
 		let token = data_local("token");
-		console.log("token",token)
 
 		if (!!token) {
 			conf.header["Authorization"] = "Bearer " +token;

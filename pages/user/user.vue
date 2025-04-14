@@ -140,7 +140,7 @@ export default {
 		},
 		// 添加计算属性判断是否已授权微信
 		hasWxAuth() {
-			return !!(this.storeUser.wxHeadImg || this.userInfo.wxHeadImg);
+			return !!(this.userInfo.wxHeadImg);
 		}
 	},
 
