@@ -61,7 +61,6 @@
 		},
 		mounted(){
 			if(this.showPop){
-				// console.log(222);
 				this.show();
 			}
 		},
@@ -77,8 +76,7 @@
 		},
 		methods: {
 			stopMove(event){
-				console.log(11);
-				console.log(event);
+		
 				return;
 			},
 			show(events) {

@@ -102,11 +102,12 @@ var render = function () {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  var m0 =
-    _vm.storeUser.wxHeadImg ||
-    _vm.userInfo.userInfo ||
-    _vm.userInfo.wxHeadImg ||
-    _vm.getConst().defaultAvatar
+  var m0 = _vm.userInfo.avatar || _vm.getConst().defaultAvatar
+  if (!_vm._isMounted) {
+    _vm.e0 = function ($event) {
+      _vm.userInfo.id && _vm.$navigateTo("/pages/user/set")
+    }
+  }
   _vm.$mp.data = Object.assign(
     {},
     {
@@ -292,14 +293,15 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 //
 //
 //
+//
 var _default = {
   computed: {
     storeUser: function storeUser() {
       return this.$store.state.user;
     },
-    // 添加计算属性判断是否已授权微信
+    // 改进授权判断逻辑
     hasWxAuth: function hasWxAuth() {
-      return !!this.userInfo.wxHeadImg;
+      return !!(this.userInfo.id || this.userInfo.wxHeadImg);
     }
   },
   data: function data() {

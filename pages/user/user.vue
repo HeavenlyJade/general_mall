@@ -2,9 +2,10 @@
 	<view class="user">
 		<!-- 头部 -->
 		<view class="user-header" :style="{'background-image': headerBgImage ? `url(${headerBgImage})` : ''}">
-			<view class="avatar-container">
+			<view class="avatar-container" @click="userInfo.id && $navigateTo('/pages/user/set')">
 				<image class="avatar" mode="aspectFill"
-					:src="storeUser.wxHeadImg || userInfo.userInfo || userInfo.wxHeadImg || getConst().defaultAvatar">
+					:src="userInfo.avatar  || getConst().defaultAvatar"
+					:class="{'avatar-logged': !!userInfo.id}">
 				</image>
 			</view>
 			<view class="user-info">
@@ -138,9 +139,9 @@ export default {
 		storeUser() {
 			return this.$store.state.user;
 		},
-		// 添加计算属性判断是否已授权微信
+		// 改进授权判断逻辑
 		hasWxAuth() {
-			return !!(this.userInfo.wxHeadImg);
+			return !!(this.userInfo.id || this.userInfo.wxHeadImg);
 		}
 	},
 
@@ -313,38 +314,31 @@ page {
 /* 头部样式 */
 .user-header {
 	position: relative;
-	padding: 31px 15px 20px; /* 按照截图中显示的31px 15px 20px */
-	background: #F5F5F5; /* 使用截图中的背景色 */
+	padding: 40px 20px 30px;
+	background-size: cover;
+	background-position: center;
 	display: flex;
 	align-items: center;
-	margin-bottom: 2rpx;
-	height: 200px; /* 截图中显示的总高度 */
+	margin-bottom: 0;
+	height: 220px;
 	width: 100%;
 	box-sizing: border-box;
-}
-
-.header-actions {
-	position: absolute;
-	top: 20px;
-	right: 20px;
-	display: flex;
-	gap: 15px;
-}
-
-.action-btn {
-	font-size: 32rpx;
-	color: #333;
+	border-bottom-left-radius: 30rpx;
+	border-bottom-right-radius: 30rpx;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .avatar-container {
-	margin-right: 20rpx;
+	margin-right: 30rpx;
+	position: relative;
 }
 
 .avatar {
-	width: 70rpx;
-	height: 70rpx;
+	width: 120rpx;
+	height: 120rpx;
 	border-radius: 50%;
-	background-color: #e0e0e0;
+	border: 4rpx solid rgba(255, 255, 255, 0.8);
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .user-info {
@@ -352,30 +346,42 @@ page {
 }
 
 .nickname {
-	font-size: 28rpx;
-	color: #333;
-	font-weight: normal;
-	margin-bottom: 4rpx;
+	font-size: 36rpx;
+	color: #fff;
+	font-weight: bold;
+	margin-bottom: 10rpx;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .user-id {
-	font-size: 24rpx;
-	color: #999;
+	font-size: 26rpx;
+	color: rgba(255, 255, 255, 0.9);
+	background: rgba(0, 0, 0, 0.2);
+	display: inline-block;
+	padding: 4rpx 16rpx;
+	border-radius: 20rpx;
 }
 
 .auth-buttons {
-	margin-top: 10rpx;
+	margin-top: 20rpx;
 }
 
 .auth-btn {
-	background-color: #4a4a4a;
+	background: linear-gradient(to right, #ff7043, #ff5722);
 	color: #fff;
-	font-size: 24rpx;
-	padding: 8rpx 24rpx;
-	border-radius: 30rpx;
+	font-size: 28rpx;
+	padding: 12rpx 32rpx;
+	border-radius: 40rpx;
 	border: none;
 	line-height: 1.5;
 	height: auto;
+	box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3);
+	transition: all 0.3s ease;
+}
+
+.auth-btn:active {
+	transform: scale(0.95);
+	box-shadow: 0 2px 5px rgba(255, 87, 34, 0.3);
 }
 
 /* 统计数据样式 */
@@ -637,5 +643,23 @@ page {
 .navbar-item.active .navbar-icon,
 .navbar-item.active .navbar-text {
 	color: #E91E63;
+}
+
+.avatar-logged {
+	cursor: pointer;
+	position: relative;
+}
+
+.avatar-logged:after {
+	content: '';
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: 30rpx;
+	height: 30rpx;
+	background-color: #4CAF50;
+	border-radius: 50%;
+	border: 3rpx solid #fff;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 </style>

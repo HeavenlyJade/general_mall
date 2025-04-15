@@ -184,7 +184,6 @@ var _default = {
   },
   mounted: function mounted() {
     if (this.showPop) {
-      // console.log(222);
       this.show();
     }
   },
@@ -200,8 +199,6 @@ var _default = {
   },
   methods: {
     stopMove: function stopMove(event) {
-      console.log(11);
-      console.log(event);
       return;
     },
     show: function show(events) {

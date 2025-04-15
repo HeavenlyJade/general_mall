@@ -183,9 +183,7 @@ var _default = {
   },
   methods: {
     onConfirm: function onConfirm(e) {
-      console.log(e);
       this.addressData.pickerText = e.label;
-      console.log(this.addressData);
     },
     showMulLinkageThreePicker: function showMulLinkageThreePicker() {
       this.$refs.mpvueCityPicker.show();
@@ -198,14 +196,12 @@ var _default = {
           this.addressData = ite;
         }
       }
-      console.log(this.addressData);
     },
     loadAddress: function loadAddress() {
       var _this = this;
-      this.addressList = this.$dataLocal("address") || [];
+      // this.addressList=this.$dataLocal("address")||[];
     },
     switchChange: function switchChange(e) {
-      console.log(e.detail);
       var li = this.addressList;
       console.log(true === e.detail.value);
       if (true === e.detail.value) {

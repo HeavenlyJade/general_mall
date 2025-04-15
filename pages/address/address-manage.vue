@@ -90,9 +90,7 @@
 		},
 		methods: {
 		onConfirm(e) {
-				console.log(e);
 				 this.addressData.pickerText=e.label;
-				 console.log( this.addressData)
 			},
 			
 			showMulLinkageThreePicker() {		
@@ -106,16 +104,14 @@
 						this.addressData=ite;
 					}
 				}
-				console.log(this.addressData)
 			},
 			loadAddress(){
 				let _this=this;
-				this.addressList=this.$dataLocal("address")||[];
+				// this.addressList=this.$dataLocal("address")||[];
 
 			},
 			
 			switchChange(e){
-				console.log(e.detail)
 				var li =this.addressList;
 				console.log(true===e.detail.value)
 				if(true===e.detail.value){

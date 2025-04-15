@@ -145,24 +145,18 @@ import fixedSearch from '../../components/fixed-search/fixed-search.vue';
 
 			getFirstImage(images) {
 				try {
-					console.log('images原始数据:', images) // 打印原始数据
 					if(!images) {
-						console.log('images为空')
 						return ''
 					}
 					
 					// 尝试解析JSON
 					if(typeof images === 'string') {
-						console.log('尝试解析JSON字符串')
 						const imageArray = JSON.parse(images)
-						console.log('解析后的数组:', imageArray)
 						return imageArray[0] || ''
 					}
 					
-					console.log('直接使用images[0]:', images[0])
 					return images[0] || ''
 				} catch(e) {
-					console.log('解析出错:', e)
 					return ''
 				}
 			},
