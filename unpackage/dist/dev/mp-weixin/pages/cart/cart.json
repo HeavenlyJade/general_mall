@@ -2,6 +2,6 @@
   "navigationBarTitleText": "购物车",
   "navigationStyle": "default",
   "usingComponents": {
-    "fixed-search": "/components/fixed-search/fixed-search"
+    "uni-number-box": "/components/uni-number-box/uni-number-box"
   }
 }

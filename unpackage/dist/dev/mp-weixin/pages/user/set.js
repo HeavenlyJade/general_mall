@@ -102,12 +102,11 @@ var render = function () {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  var m0 =
-    _vm.user.headImg || _vm.user.wxHeadImg || _vm.getConst().defaultAvatar
-  var m1 = parseInt(_vm.user.gender || 0)
-  var m2 = _vm.getConst()
-  var m3 = _vm.getConst()
-  var m4 = parseInt(_vm.user.gender || 0)
+  var m0 = !_vm.loading ? _vm.user.avatar || _vm.getConst().defaultAvatar : null
+  var m1 = !_vm.loading ? parseInt(_vm.user.gender || 0) : null
+  var m2 = !_vm.loading ? _vm.getConst() : null
+  var m3 = !_vm.loading ? _vm.getConst() : null
+  var m4 = !_vm.loading ? parseInt(_vm.user.gender || 0) : null
   _vm.$mp.data = Object.assign(
     {},
     {
@@ -216,16 +215,21 @@ var _default = {
   components: {},
   data: function data() {
     return {
+      loading: true,
+      // 添加加载状态标志
       user: {
-        "id": "",
-        "guiderId": "",
-        "sex": "",
-        "mobile": "",
-        "province": '',
-        "city": '',
-        "district": '',
-        "headImg": "",
-        "gender": "0"
+        "id": null,
+        "user_id": null,
+        "gender": 0,
+        "phone": "",
+        "address": null,
+        "avatar": "",
+        "nickname": "",
+        "username": "",
+        "member_level": "无会员",
+        "points": 0,
+        "balance": 0.0,
+        "avatarurl": null
       }
     };
   },
@@ -247,8 +251,22 @@ var _default = {
     choseimg: function choseimg() {
       var _this2 = this;
       this.$chooseImageUpload(1, function (res) {
-        _this2.user.headImg = res[0];
-        _this2.user = JSON.parse(JSON.stringify(_this2.user));
+        console.log("上传结果:", res);
+        if (res && res.length > 0) {
+          // 确保URL是绝对路径
+          var imgUrl = res[0];
+          // 确保以http开头
+          if (imgUrl && !imgUrl.startsWith('http')) {
+            imgUrl = imgUrl.startsWith('//') ? 'http:' + imgUrl : 'http://' + imgUrl;
+          }
+          // 同时更新avatar和avatarurl，确保数据一致性
+          _this2.user.avatar = imgUrl;
+          _this2.user.avatarurl = imgUrl;
+
+          // 强制刷新对象，确保Vue检测到变化
+          _this2.user = JSON.parse(JSON.stringify(_this2.user));
+          console.log("更新后的用户头像:", _this2.user.avatar);
+        }
       });
     },
     updatePwd: function updatePwd() {
@@ -256,23 +274,109 @@ var _default = {
     },
     loadData: function loadData() {
       var _this3 = this;
+      this.loading = true; // 开始加载
+
+      // 显示加载提示
+      uni.showLoading({
+        title: '加载中...'
+      });
       this.$refreshUser(this.getUser().id, function (res) {
-        _this3.user = res.data;
-        if (!_this3.user.nickName) _this3.user.nickName = _this3.user.wxNickName || '';
+        console.log("res", res);
+        if (res) {
+          // 使用解构赋值和默认值，确保即使API返回null或undefined也能正常工作
+          var id = res.id,
+            user_id = res.user_id,
+            _res$gender = res.gender,
+            gender = _res$gender === void 0 ? 0 : _res$gender,
+            _res$phone = res.phone,
+            phone = _res$phone === void 0 ? "" : _res$phone,
+            _res$address = res.address,
+            address = _res$address === void 0 ? null : _res$address,
+            _res$avatar = res.avatar,
+            avatar = _res$avatar === void 0 ? "" : _res$avatar,
+            _res$nickname = res.nickname,
+            nickname = _res$nickname === void 0 ? "" : _res$nickname,
+            _res$username = res.username,
+            username = _res$username === void 0 ? "" : _res$username,
+            _res$member_level = res.member_level,
+            member_level = _res$member_level === void 0 ? "无会员" : _res$member_level,
+            _res$points = res.points,
+            points = _res$points === void 0 ? 0 : _res$points,
+            _res$balance = res.balance,
+            balance = _res$balance === void 0 ? 0.0 : _res$balance;
+
+          // 创建一个全新的对象，而不是修改现有对象的属性
+          _this3.user = {
+            id: id,
+            user_id: user_id,
+            gender: gender,
+            phone: phone,
+            address: address,
+            avatar: avatar,
+            nickname: nickname || '微信用户',
+            // 确保有默认值
+            username: username || '',
+            // 确保有默认值
+            member_level: member_level,
+            points: points,
+            balance: balance
+          };
+          console.log('用户数据加载完成:', _this3.user);
+        } else {
+          console.error('获取用户数据失败或数据为空');
+        }
+        _this3.loading = false; // 结束加载
+        uni.hideLoading(); // 隐藏加载提示
+      }, function (error) {
+        console.error('加载用户数据出错:', error);
+        _this3.loading = false;
+        uni.hideLoading();
+        uni.showToast({
+          title: '获取用户信息失败',
+          icon: 'none'
+        });
       });
     },
     confirm: function confirm() {
-      var o = this.user;
+      // 验证手机号
+      if (!this.validatePhone()) {
+        return;
+      }
+      var o = {
+        id: this.user.id,
+        real_name: this.user.real_name,
+        nickname: this.user.nickname,
+        gender: this.user.gender,
+        avatar: this.user.avatar,
+        // 优先使用新上传的头像
+        phone: this.user.phone // 添加手机号到更新字段
+      };
+
       var _this = this;
-      this.$post("user/update", o, function (res) {
-        _this.setUser(res.data);
-        setTimeout(function () {
-          uni.navigateBack();
-        }, 800);
+      // 修改URL，加上用户ID
+      var userId = this.user.id;
+      var url = "/mini_core/shop_users/".concat(userId);
+      this.$put(url, o, function (res) {
+        console.log("res", res);
+        if (res) {
+          _this.setUser(res);
+          uni.showToast({
+            title: '保存成功',
+            icon: 'success'
+          });
+          setTimeout(function () {
+            uni.navigateBack();
+          }, 800);
+        } else {
+          uni.showToast({
+            title: res.msg || '保存失败',
+            icon: 'none'
+          });
+        }
       });
     },
     toreg: function toreg() {
-      if (this.$isNull(this.user.id) || this.$isNull(this.user.mobile)) {
+      if (this.$isNull(this.user.id) || this.$isNull(this.user.phone)) {
         this.$dataLocal("pre_reg_page", "/pages/user/set");
         this.$redirectTo("login/register");
       } else {}
@@ -293,6 +397,25 @@ var _default = {
       console.log(e.detail);
       var statusTip = e.detai ? '打开' : '关闭';
       this.$api.msg("".concat(statusTip, "\u6D88\u606F\u63A8\u9001"));
+    },
+    validatePhone: function validatePhone() {
+      // 中国大陆手机号正则表达式
+      var phoneRegex = /^1[3-9]\d{9}$/;
+      if (!this.user.phone) {
+        uni.showToast({
+          title: '请输入手机号码',
+          icon: 'none'
+        });
+        return false;
+      }
+      if (!phoneRegex.test(this.user.phone)) {
+        uni.showToast({
+          title: '请输入正确的手机号码',
+          icon: 'none'
+        });
+        return false;
+      }
+      return true;
     }
   }
 };

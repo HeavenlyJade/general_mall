@@ -93,7 +93,24 @@ module.exports = _defineProperty, module.exports.__esModule = true, module.expor
 
 /***/ }),
 
-/***/ 116:
+/***/ 12:
+/*!**************************************************************!*\
+  !*** ./node_modules/@babel/runtime/helpers/toPropertyKey.js ***!
+  \**************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var _typeof = __webpack_require__(/*! ./typeof.js */ 13)["default"];
+var toPrimitive = __webpack_require__(/*! ./toPrimitive.js */ 14);
+function toPropertyKey(t) {
+  var i = toPrimitive(t, "string");
+  return "symbol" == _typeof(i) ? i : i + "";
+}
+module.exports = toPropertyKey, module.exports.__esModule = true, module.exports["default"] = module.exports;
+
+/***/ }),
+
+/***/ 124:
 /*!************************************************************************************************!*\
   !*** ./node_modules/@dcloudio/vue-cli-plugin-uni/packages/@babel/runtime/regenerator/index.js ***!
   \************************************************************************************************/
@@ -102,12 +119,12 @@ module.exports = _defineProperty, module.exports.__esModule = true, module.expor
 
 // TODO(Babel 8): Remove this file.
 
-var runtime = __webpack_require__(/*! @babel/runtime/helpers/regeneratorRuntime */ 117)();
+var runtime = __webpack_require__(/*! @babel/runtime/helpers/regeneratorRuntime */ 125)();
 module.exports = runtime;
 
 /***/ }),
 
-/***/ 117:
+/***/ 125:
 /*!*******************************************************************!*\
   !*** ./node_modules/@babel/runtime/helpers/regeneratorRuntime.js ***!
   \*******************************************************************/
@@ -429,7 +446,7 @@ module.exports = _regeneratorRuntime, module.exports.__esModule = true, module.e
 
 /***/ }),
 
-/***/ 118:
+/***/ 126:
 /*!*****************************************************************!*\
   !*** ./node_modules/@babel/runtime/helpers/asyncToGenerator.js ***!
   \*****************************************************************/
@@ -467,23 +484,6 @@ function _asyncToGenerator(fn) {
   };
 }
 module.exports = _asyncToGenerator, module.exports.__esModule = true, module.exports["default"] = module.exports;
-
-/***/ }),
-
-/***/ 12:
-/*!**************************************************************!*\
-  !*** ./node_modules/@babel/runtime/helpers/toPropertyKey.js ***!
-  \**************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-var _typeof = __webpack_require__(/*! ./typeof.js */ 13)["default"];
-var toPrimitive = __webpack_require__(/*! ./toPrimitive.js */ 14);
-function toPropertyKey(t) {
-  var i = toPrimitive(t, "string");
-  return "symbol" == _typeof(i) ? i : i + "";
-}
-module.exports = toPropertyKey, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
 /***/ }),
 
@@ -10241,17 +10241,25 @@ function setUser(e) {
 }
 Core.prototype.refreshUser = function (userid, func) {
   //刷新local中的user缓存 
-  (0, _requestUtil.post)("user/find", {
-    id: userid
-  }, function (res) {
-    var b = !!res && !!res.data;
-    if (b) {
+  (0, _requestUtil.get)("/mini_core/shop_users/".concat(userid), {}, function (res) {
+    // 保存用户数据到本地
+    if (res && res.code === 200) {
       mainUtil.setUser(res.data);
-      if (!!func && typeof func == "function") {
-        func(res);
-      }
     }
-  }, function (err) {});
+
+    // 调用回调函数，直接传整个响应对象
+    if (typeof func === "function") {
+      func(res);
+    }
+  }, function (err) {
+    // 错误处理 
+    console.error("获取用户数据失败:", err);
+
+    // 调用回调函数，传递错误信息
+    if (typeof func === "function") {
+      func(null, err);
+    }
+  });
 };
 Core.prototype.rmLoginMsg = function () {
   mainUtil.setUser(null);
@@ -11667,11 +11675,12 @@ var CONFIG = {
   //host:"http://localhost:8086/", 
   host: "http://127.0.0.1:5555/api/v1",
   projectName: "wxh5/#/",
-  WS: "ws://192.168.1.6:8090/websocket/"
+  WS: "ws://192.168.1.6:8090/websocket/",
+  upload_url: "http://8.137.108.237:8012/api/v1"
 };
 CONFIG.API = CONFIG.host; //config+"api"
 
-CONFIG.uploadUrl = CONFIG.API + "attach/upload";
+CONFIG.uploadUrl = CONFIG.upload_url + "/mini_core/upload_image";
 //CONFIG.verifyUrl=CONFIG.API+"open/verify";
 
 CONFIG.defaultAvatar = "http://ydytxx.oss-cn-beijing.aliyuncs.com/avatar.jpg";
@@ -11853,13 +11862,31 @@ Core.prototype.upload_img = function (img_list, callback) {
   });
   for (var _i in images) {
     var file = images[_i].uri;
-    requestUtil.upLoad(file, function (uploadFileRes) {
-      var obj = JSON.parse(uploadFileRes);
-      var img = obj.data[0].url;
+    requestUtil.upLoad(file, function (data) {
+      console.log("上传返回数据", data);
+      // 获取URL并确保是绝对路径
+      var img = data.url;
+      if (img) {
+        // 处理URL格式问题
+        if (!img.startsWith('http')) {
+          img = img.startsWith('//') ? 'http:' + img : 'http://' + img;
+        }
+
+        // 替换Windows反斜杠为正斜杠
+        img = img.replace(/\\/g, '/');
+        console.log("处理后的图片URL:", img);
+      } else {
+        console.error("获取URL失败，完整响应:", data);
+        img = "";
+      }
       imgList.push(img);
       uploadNum++;
-    }, function (err) {});
+    }, function (err) {
+      console.error("上传失败:", err);
+      uploadNum++; // 即使失败也增加计数，避免卡住
+    });
   }
+
   var i = setInterval(function () {
     if (uploadNum == images.length) {
       uni.hideLoading();
@@ -11870,25 +11897,41 @@ Core.prototype.upload_img = function (img_list, callback) {
 }, Core.prototype.upLoad = function (file, onSuccess, onError) {
   //用于base64图片的上传
   return new Promise(function (resolve, reject) {
+    // 获取用户token
+    var token = (0, _cacheUtil.data_local)("token");
     uni.uploadFile({
       url: _constant.default.uploadUrl,
-      //仅为示例，非真实的接口地址
       filePath: file,
       name: 'file',
       formData: {
-        'user': 'test'
+        'file_type': 'wx_user_avatar',
+        'token': token // 添加token到formData中
+      },
+
+      header: {
+        // 如果API需要在header中添加token
+        "Authorization": "Bearer ".concat(token)
       },
       success: function success(res) {
-        if (typeof onSuccess == "function") {
-          onSuccess(res.data);
+        try {
+          // 解析响应数据为JSON对象
+          var data = JSON.parse(res.data);
+          if (typeof onSuccess === "function") {
+            onSuccess(data);
+          }
+          resolve(data);
+        } catch (e) {
+          if (typeof onError === "function") {
+            onError(e);
+          }
+          reject(e);
         }
-        resolve(res.data);
       },
       fail: function fail(res) {
-        if (typeof onError == "function") {
-          onError(res.data);
+        if (typeof onError === "function") {
+          onError(res);
         }
-        onError(res.data);
+        reject(res);
       }
     });
   });
@@ -11965,7 +12008,6 @@ Core.prototype.post = function (url, data, onSuccess, onError) {
           return;
         }
       }
-      console.log("getdata_by_ajax");
       if (typeof onSuccess == "function") {
         onSuccess(res.data);
       }
@@ -11988,7 +12030,7 @@ Core.prototype.post = function (url, data, onSuccess, onError) {
     };
     var token = (0, _cacheUtil.data_local)("token");
     if (!!token) {
-      conf.header["Authorization"] = token;
+      conf.header["Authorization"] = "Bearer ".concat(token);
     }
     conf.method = "POST";
     return uni.request(conf);
@@ -12037,7 +12079,6 @@ Core.prototype.get = function (url, data, onSuccess, onError) {
     var local_obj = (0, _cacheUtil.data_local)(local_key);
     if (is_local_cache) {
       if (isOk(local_obj)) {
-        console.log("get_data_from_data_local");
         if (typeof onSuccess == "function") {
           onSuccess(local_obj);
         }
@@ -12053,7 +12094,6 @@ Core.prototype.get = function (url, data, onSuccess, onError) {
       conf.data = data;
     }
     conf.success = function (res) {
-      console.log(111, res);
       // 检查返回的数据中的code是否为401
       if (res.statusCode === 401) {
         handleUnauthorized();
@@ -12127,7 +12167,7 @@ Core.prototype.put = function (url, data, onSuccess, onError) {
     };
     var token = (0, _cacheUtil.data_local)("token");
     if (!!token) {
-      conf.header["Authorization"] = token;
+      conf.header["Authorization"] = "Bearer " + token;
     }
     conf.method = "PUT";
     return uni.request(conf);
@@ -12162,7 +12202,7 @@ Core.prototype.delete = function (url, data, onSuccess, onError) {
     };
     var token = (0, _cacheUtil.data_local)("token");
     if (!!token) {
-      conf.header["Authorization"] = token;
+      conf.header["Authorization"] = "Bearer " + token;
     }
     conf.method = "DELETE";
     return uni.request(conf);
@@ -12939,7 +12979,117 @@ exports.default = _default;
 
 /***/ }),
 
-/***/ 413:
+/***/ 42:
+/*!************************************************************************************!*\
+  !*** D:/code/company/mini_app/general_mall/general_mall/static/js/utils/wsUtil.js ***!
+  \************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(uni) {
+
+var _interopRequireDefault = __webpack_require__(/*! @babel/runtime/helpers/interopRequireDefault */ 4);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _constant = _interopRequireDefault(__webpack_require__(/*! ../data/constant.js */ 34));
+function Core() {}
+Core.prototype.INIT_WS = function (e, handle, open, err) {
+  uni.connectSocket({
+    url: _constant.default.WS + e,
+    success: function success(cpl) {
+      console.log("suc====================");
+    },
+    complete: function complete(cpl) {},
+    fail: function fail(fai) {
+      console.log("fai===================");
+      wsUtil.INIT_WS(e, handle, open, err);
+    }
+  });
+  uni.onSocketOpen(function (res) {
+    console.log("opem====================");
+    if (typeof open == "function") open(res);
+  });
+  uni.onSocketError(function (res) {});
+  uni.onSocketMessage(function (res) {
+    if (typeof handle == "function") handle(res);
+  });
+  uni.onSocketClose(function (res) {});
+};
+Core.prototype.SEND_WS_MSG = function (msg) {
+  uni.sendSocketMessage({
+    data: msg,
+    success: function success(cpl) {
+      console.log("send_cpl========" + JSON.stringify(cpl));
+    },
+    fail: function fail(fai) {
+      console.log("send_fail========" + JSON.stringify(fai));
+    }
+  });
+};
+Core.prototype.CLOSE_WS = function (msg) {
+  uni.closeSocket();
+};
+
+/* ================================================= */
+
+Core.prototype.createWebSocket = function (e, func, err) {
+  return uni.connectSocket({
+    url: _constant.default.WS + e,
+    success: function success(cpl) {
+      if (typeof func == "function") func(cpl);
+    },
+    complete: function complete(cpl) {},
+    fail: function fail(fai) {
+      if (typeof err == "function") err(fai);
+    }
+  });
+};
+Core.prototype.onSocketOpen = function (func) {
+  uni.onSocketOpen(function (res) {
+    if (typeof func == "function") func(res);
+  });
+};
+Core.prototype.onSocketError = function (func) {
+  uni.onSocketError(function (res) {
+    func(res);
+  });
+};
+Core.prototype.sendSocketMessage = function (msg) {
+  uni.sendSocketMessage({
+    data: msg,
+    success: function success(cpl) {
+      console.log("send_cpl========" + JSON.stringify(cpl));
+    },
+    fail: function fail(fai) {
+      console.log("send_fail========" + JSON.stringify(fai));
+    }
+  });
+};
+Core.prototype.onSocketMessage = function (func) {
+  uni.onSocketMessage(function (res) {
+    if (typeof func == "function") func(res);
+  });
+};
+Core.prototype.onSocketClose = function (func) {
+  uni.onSocketClose(function (res) {
+    console.log("suc");
+    if (typeof func == "function") func(res);
+  });
+};
+Core.prototype.closeSocket = function () {
+  uni.closeSocket();
+};
+var wsUtil = new Core();
+var _default = wsUtil;
+exports.default = _default;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
+
+/***/ }),
+
+/***/ 420:
 /*!************************************************************************************************************!*\
   !*** D:/code/company/mini_app/general_mall/general_mall/components/mpvue-citypicker/city-data/province.js ***!
   \************************************************************************************************************/
@@ -13062,7 +13212,7 @@ exports.default = _default;
 
 /***/ }),
 
-/***/ 414:
+/***/ 421:
 /*!********************************************************************************************************!*\
   !*** D:/code/company/mini_app/general_mall/general_mall/components/mpvue-citypicker/city-data/city.js ***!
   \********************************************************************************************************/
@@ -14184,7 +14334,7 @@ exports.default = _default;
 
 /***/ }),
 
-/***/ 415:
+/***/ 422:
 /*!********************************************************************************************************!*\
   !*** D:/code/company/mini_app/general_mall/general_mall/components/mpvue-citypicker/city-data/area.js ***!
   \********************************************************************************************************/
@@ -23301,116 +23451,6 @@ var areaData = [[[{
 }]]];
 var _default = areaData;
 exports.default = _default;
-
-/***/ }),
-
-/***/ 42:
-/*!************************************************************************************!*\
-  !*** D:/code/company/mini_app/general_mall/general_mall/static/js/utils/wsUtil.js ***!
-  \************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(uni) {
-
-var _interopRequireDefault = __webpack_require__(/*! @babel/runtime/helpers/interopRequireDefault */ 4);
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-var _constant = _interopRequireDefault(__webpack_require__(/*! ../data/constant.js */ 34));
-function Core() {}
-Core.prototype.INIT_WS = function (e, handle, open, err) {
-  uni.connectSocket({
-    url: _constant.default.WS + e,
-    success: function success(cpl) {
-      console.log("suc====================");
-    },
-    complete: function complete(cpl) {},
-    fail: function fail(fai) {
-      console.log("fai===================");
-      wsUtil.INIT_WS(e, handle, open, err);
-    }
-  });
-  uni.onSocketOpen(function (res) {
-    console.log("opem====================");
-    if (typeof open == "function") open(res);
-  });
-  uni.onSocketError(function (res) {});
-  uni.onSocketMessage(function (res) {
-    if (typeof handle == "function") handle(res);
-  });
-  uni.onSocketClose(function (res) {});
-};
-Core.prototype.SEND_WS_MSG = function (msg) {
-  uni.sendSocketMessage({
-    data: msg,
-    success: function success(cpl) {
-      console.log("send_cpl========" + JSON.stringify(cpl));
-    },
-    fail: function fail(fai) {
-      console.log("send_fail========" + JSON.stringify(fai));
-    }
-  });
-};
-Core.prototype.CLOSE_WS = function (msg) {
-  uni.closeSocket();
-};
-
-/* ================================================= */
-
-Core.prototype.createWebSocket = function (e, func, err) {
-  return uni.connectSocket({
-    url: _constant.default.WS + e,
-    success: function success(cpl) {
-      if (typeof func == "function") func(cpl);
-    },
-    complete: function complete(cpl) {},
-    fail: function fail(fai) {
-      if (typeof err == "function") err(fai);
-    }
-  });
-};
-Core.prototype.onSocketOpen = function (func) {
-  uni.onSocketOpen(function (res) {
-    if (typeof func == "function") func(res);
-  });
-};
-Core.prototype.onSocketError = function (func) {
-  uni.onSocketError(function (res) {
-    func(res);
-  });
-};
-Core.prototype.sendSocketMessage = function (msg) {
-  uni.sendSocketMessage({
-    data: msg,
-    success: function success(cpl) {
-      console.log("send_cpl========" + JSON.stringify(cpl));
-    },
-    fail: function fail(fai) {
-      console.log("send_fail========" + JSON.stringify(fai));
-    }
-  });
-};
-Core.prototype.onSocketMessage = function (func) {
-  uni.onSocketMessage(function (res) {
-    if (typeof func == "function") func(res);
-  });
-};
-Core.prototype.onSocketClose = function (func) {
-  uni.onSocketClose(function (res) {
-    console.log("suc");
-    if (typeof func == "function") func(res);
-  });
-};
-Core.prototype.closeSocket = function () {
-  uni.closeSocket();
-};
-var wsUtil = new Core();
-var _default = wsUtil;
-exports.default = _default;
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 2)["default"]))
 
 /***/ }),
 

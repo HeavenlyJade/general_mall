@@ -120,7 +120,7 @@
 					</view>
 					<text class="tool-text">我的营收</text>
 				</view>
-				<view class="tool-item">
+				<view class="tool-item" @click="$navigateTo('/pages/user/set')">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/personal_Information.png" class="tool-icon-image"></image>
 					</view>
@@ -196,13 +196,10 @@ export default {
 							code: loginRes.code,
 							avatarUrl: userInfo.avatarUrl,
 							nickName: userInfo.nickName
-						};
-
-						console.log('准备发送的数据:', requestData);
-					
+						};					
 						// 发送请求到后端API
 						this.$post("/wx_mini_app/wx_auth/wechat_login", requestData, result => {
-							console.log('用戶登陸數據成功:', result);
+			
 							
 							// 检查返回的数据结构
 							if (result.code === 200) {

@@ -56,13 +56,29 @@ Core.prototype.upload_img = function(img_list, callback) {
 		});
 		for (let i in images) {
 			let file = images[i].uri;
-			requestUtil.upLoad(file, (uploadFileRes) => {
-				let obj = JSON.parse(uploadFileRes);
-				let img = obj.data[0].url
+			requestUtil.upLoad(file, (data) => {
+				console.log("上传返回数据", data);
+				// 获取URL并确保是绝对路径
+				let img = data.url;
+				if (img) {
+					// 处理URL格式问题
+					if (!img.startsWith('http')) {
+						img = img.startsWith('//') ? 'http:' + img : 'http://' + img;
+					}
+					
+					// 替换Windows反斜杠为正斜杠
+					img = img.replace(/\\/g, '/');
+					
+					console.log("处理后的图片URL:", img);
+				} else {
+					console.error("获取URL失败，完整响应:", data);
+					img = "";
+				}
 				imgList.push(img);
 				uploadNum++;
 			}, (err) => {
-
+				console.error("上传失败:", err);
+				uploadNum++;  // 即使失败也增加计数，避免卡住
 			})
 		}
 		var i = setInterval(() => {
@@ -75,24 +91,40 @@ Core.prototype.upload_img = function(img_list, callback) {
 	},
 	Core.prototype.upLoad = function(file, onSuccess, onError) { //用于base64图片的上传
 		return new Promise((resolve, reject) => {
+			// 获取用户token
+			let token = data_local("token");
 			uni.uploadFile({
-				url: CONFIG.uploadUrl, //仅为示例，非真实的接口地址
+				url: CONFIG.uploadUrl, 
 				filePath: file,
 				name: 'file',
 				formData: {
-					'user': 'test'
+					'file_type': 'wx_user_avatar',
+					'token': token // 添加token到formData中
+				},
+				header: {
+					// 如果API需要在header中添加token
+					"Authorization":  `Bearer ${token}`
 				},
 				success: (res) => {
-					if (typeof onSuccess == "function") {
-						onSuccess(res.data)
+					try {
+						// 解析响应数据为JSON对象
+						const data = JSON.parse(res.data);
+						if (typeof onSuccess === "function") {
+							onSuccess(data);
+						}
+						resolve(data);
+					} catch (e) {
+						if (typeof onError === "function") {
+							onError(e);
+						}
+						reject(e);
 					}
-					resolve(res.data)
 				},
 				fail: (res) => {
-					if (typeof onError == "function") {
-						onError(res.data)
+					if (typeof onError === "function") {
+						onError(res);
 					}
-					onError(res.data)
+					reject(res);
 				}
 			});
 		})
@@ -175,7 +207,6 @@ Core.prototype.post = function(url, data, onSuccess, onError,is_local_cache=fals
 				}       	
 			}	
 			
-			console.log("getdata_by_ajax")
 			
 			if (typeof onSuccess == "function") {
 				onSuccess(res.data);
@@ -202,7 +233,7 @@ Core.prototype.post = function(url, data, onSuccess, onError,is_local_cache=fals
 
 		let token = data_local("token");
 		if (!!token) {
-			conf.header["Authorization"] = token;
+			conf.header["Authorization"] =  `Bearer ${token}`
 		}
 
 		conf.method = "POST";
@@ -256,7 +287,6 @@ Core.prototype.get = function(url, data, onSuccess, onError, is_local_cache=fals
 		
 		if(is_local_cache){
 			if(isOk(local_obj)){ 
-				console.log("get_data_from_data_local");
 				if (typeof onSuccess == "function") { onSuccess(local_obj); }
 				resolve(local_obj);
 			}
@@ -272,7 +302,6 @@ Core.prototype.get = function(url, data, onSuccess, onError, is_local_cache=fals
 			conf.data = data;
 		}
 		conf.success = (res) => {
-			console.log(111,res);
 			// 检查返回的数据中的code是否为401
 			if　(res.statusCode ===401){
 				handleUnauthorized();
@@ -356,8 +385,9 @@ Core.prototype.put = function(url, data, onSuccess, onError) {
 
 		let token = data_local("token");
 		if (!!token) {
-			conf.header["Authorization"] = token;
+			conf.header["Authorization"] = "Bearer " +token;
 		}
+
 
 		conf.method = "PUT";
 		return uni.request(conf);
@@ -394,7 +424,7 @@ Core.prototype.delete = function(url, data, onSuccess, onError) {
 
 		let token = data_local("token");
 		if (!!token) {
-			conf.header["Authorization"] = token;
+			conf.header["Authorization"] = "Bearer " +token;
 		}
 
 		conf.method = "DELETE";

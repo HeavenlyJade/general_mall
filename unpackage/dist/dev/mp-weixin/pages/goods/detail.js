@@ -101,7 +101,7 @@ var components
 try {
   components = {
     ownShare: function () {
-      return __webpack_require__.e(/*! import() | components/own-share/own-share */ "components/own-share/own-share").then(__webpack_require__.bind(null, /*! @/components/own-share/own-share.vue */ 387))
+      return __webpack_require__.e(/*! import() | components/own-share/own-share */ "components/own-share/own-share").then(__webpack_require__.bind(null, /*! @/components/own-share/own-share.vue */ 394))
     },
   }
 } catch (e) {
@@ -186,7 +186,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 var ownShare = function ownShare() {
   __webpack_require__.e(/*! require.ensure | components/own-share/own-share */ "components/own-share/own-share").then((function () {
-    return resolve(__webpack_require__(/*! @/components/own-share/own-share.vue */ 387));
+    return resolve(__webpack_require__(/*! @/components/own-share/own-share.vue */ 394));
   }).bind(null, __webpack_require__)).catch(__webpack_require__.oe);
 };
 var _default = {

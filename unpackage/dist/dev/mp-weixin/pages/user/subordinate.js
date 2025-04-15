@@ -101,7 +101,7 @@ var components
 try {
   components = {
     msTabs: function () {
-      return __webpack_require__.e(/*! import() | components/ms-tabs/ms-tabs */ "components/ms-tabs/ms-tabs").then(__webpack_require__.bind(null, /*! @/components/ms-tabs/ms-tabs.vue */ 366))
+      return __webpack_require__.e(/*! import() | components/ms-tabs/ms-tabs */ "components/ms-tabs/ms-tabs").then(__webpack_require__.bind(null, /*! @/components/ms-tabs/ms-tabs.vue */ 373))
     },
   }
 } catch (e) {
@@ -181,7 +181,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 var msTabs = function msTabs() {
   __webpack_require__.e(/*! require.ensure | components/ms-tabs/ms-tabs */ "components/ms-tabs/ms-tabs").then((function () {
-    return resolve(__webpack_require__(/*! ../../components/ms-tabs/ms-tabs.vue */ 366));
+    return resolve(__webpack_require__(/*! ../../components/ms-tabs/ms-tabs.vue */ 373));
   }).bind(null, __webpack_require__)).catch(__webpack_require__.oe);
 };
 var _default = {

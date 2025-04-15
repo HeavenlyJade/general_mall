@@ -3,10 +3,11 @@ var CONFIG={
 	host:"http://127.0.0.1:5555/api/v1",
 	projectName:"wxh5/#/",
 	WS:"ws://192.168.1.6:8090/websocket/", 
+	upload_url:"http://8.137.108.237:8012/api/v1",
 }
 CONFIG.API=CONFIG.host; //config+"api"
 
-CONFIG.uploadUrl=CONFIG.API+"attach/upload";
+CONFIG.uploadUrl=CONFIG.upload_url+"/mini_core/upload_image";
 //CONFIG.verifyUrl=CONFIG.API+"open/verify";
 
 CONFIG.defaultAvatar="http://ydytxx.oss-cn-beijing.aliyuncs.com/avatar.jpg";

@@ -152,7 +152,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 var uniNumberBox = function uniNumberBox() {
   __webpack_require__.e(/*! require.ensure | components/uni-number-box/uni-number-box */ "components/uni-number-box/uni-number-box").then((function () {
-    return resolve(__webpack_require__(/*! @/components/uni-number-box/uni-number-box.vue */ 425));
+    return resolve(__webpack_require__(/*! @/components/uni-number-box/uni-number-box.vue */ 359));
   }).bind(null, __webpack_require__)).catch(__webpack_require__.oe);
 };
 var _default = {

@@ -71,3 +71,34 @@ page {
   -webkit-transform: translateX(16rpx) scale(0.84);
           transform: translateX(16rpx) scale(0.84);
 }
+.save-btn {
+  width: 90%;
+  height: 90rpx;
+  margin: 40rpx auto;
+  border-radius: 45rpx;
+  background: linear-gradient(to right, #FF9800, #F57C00);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 32rpx;
+  font-weight: bold;
+  border: none;
+  box-shadow: 0 4rpx 10rpx rgba(245, 124, 0, 0.3);
+}
+.phone-btn {
+  font-size: 28rpx;
+  background-color: #FF9800;
+  color: #fff;
+  padding: 8rpx 24rpx;
+  border-radius: 30rpx;
+  margin: 0;
+  line-height: 1.5;
+  height: auto;
+}
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300rpx;
+}

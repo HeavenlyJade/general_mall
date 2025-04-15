@@ -377,12 +377,8 @@ var _default = {
               avatarUrl: userInfo.avatarUrl,
               nickName: userInfo.nickName
             };
-            console.log('准备发送的数据:', requestData);
-
             // 发送请求到后端API
             _this2.$post("/wx_mini_app/wx_auth/wechat_login", requestData, function (result) {
-              console.log('用戶登陸數據成功:', result);
-
               // 检查返回的数据结构
               if (result.code === 200) {
                 // 更新本地用户信息

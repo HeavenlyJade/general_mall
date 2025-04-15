@@ -143,7 +143,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 var mpvueCityPicker = function mpvueCityPicker() {
   Promise.all(/*! require.ensure | components/mpvue-citypicker/mpvueCityPicker */[__webpack_require__.e("common/vendor"), __webpack_require__.e("components/mpvue-citypicker/mpvueCityPicker")]).then((function () {
-    return resolve(__webpack_require__(/*! @/components/mpvue-citypicker/mpvueCityPicker.vue */ 408));
+    return resolve(__webpack_require__(/*! @/components/mpvue-citypicker/mpvueCityPicker.vue */ 415));
   }).bind(null, __webpack_require__)).catch(__webpack_require__.oe);
 };
 /* 	import cityData from '@/components/city.data.js';

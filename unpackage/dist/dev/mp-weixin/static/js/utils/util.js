@@ -4,6 +4,7 @@ import CONFIG from "../data/constant.js"
 import {data_local} from "./cacheUtil.js"
 
 import {post} from "./requestUtil.js";
+import {get} from "./requestUtil.js";
 import {parseJSON} from "./objUtil.js";
 
 function Core(){
@@ -298,14 +299,27 @@ Core.prototype.setUser=function(u){
 };
 export function setUser(e) {return mainUtil.setUser(e);}
 
-Core.prototype.refreshUser = function (userid,func) {  //刷新local中的user缓存 
-   post("user/find",{id:userid},function(res){
-	   let b=!!res&&!!res.data;
-	   if(b){
-		   mainUtil.setUser(res.data);
-		   if(!!func&&typeof func=="function"){func(res);}	
-	   }    
-	 },function(err){}) 
+Core.prototype.refreshUser = function (userid, func) {  //刷新local中的user缓存 
+   get(`/mini_core/shop_users/${userid}`, {}, function(res){
+      
+      // 保存用户数据到本地
+      if (res && res.code === 200) {
+        mainUtil.setUser(res.data);
+      }
+      
+      // 调用回调函数，直接传整个响应对象
+      if (typeof func === "function") {
+        func(res);
+      }
+   }, function(err) {
+      // 错误处理 
+      console.error("获取用户数据失败:", err);
+      
+      // 调用回调函数，传递错误信息
+      if (typeof func === "function") {
+        func(null, err);
+      }
+   }) 
 }
 
 Core.prototype.rmLoginMsg=function(){
