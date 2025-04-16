@@ -102,6 +102,26 @@ var render = function () {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
+  var l0 = _vm.__map(_vm.addressList, function (item, index) {
+    var $orig = _vm.__get_orig(item)
+    var g0 = item.detail_address && item.detail_address.includes("号店")
+    var g1 = g0
+      ? item.detail_address.substring(item.detail_address.indexOf("号") - 2)
+      : null
+    return {
+      $orig: $orig,
+      g0: g0,
+      g1: g1,
+    }
+  })
+  _vm.$mp.data = Object.assign(
+    {},
+    {
+      $root: {
+        l0: l0,
+      },
+    }
+  )
 }
 var recyclableRender = false
 var staticRenderFns = []
@@ -162,11 +182,33 @@ exports.default = void 0;
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 var _default = {
   data: function data() {
     return {
       source: 0,
-      addressList: []
+      addressList: [],
+      isSettingDefault: false // 是否正在设置默认地址
     };
   },
   onLoad: function onLoad(option) {
@@ -177,46 +219,181 @@ var _default = {
   },
   methods: {
     loadAddress: function loadAddress() {
-      this.addressList = this.$dataLocal("address");
+      var _this2 = this;
+      var _this = this;
+      // 显示加载提示
+      uni.showLoading({
+        title: '加载中'
+      });
+
+      // 获取用户ID
+      var user = this.getUser() || {};
+      if (!user.id) {
+        uni.hideLoading();
+        this.$toast('请先登录');
+        return;
+      }
+
+      // 调用地址列表接口
+      this.$get("/wx_mini_app/wx_auth/address/".concat(user.id), {}, function (res) {
+        uni.hideLoading();
+        if (res && res.items) {
+          console.log("res.items", res.items);
+          _this2.addressList = res.items;
+        } else {
+          _this2.addressList = [];
+        }
+      }, function (err) {
+        uni.hideLoading();
+        console.error('获取地址列表失败:', err);
+        _this2.$toast('获取地址列表失败');
+        _this2.addressList = [];
+      });
     },
     editAddress: function editAddress(item) {
       uni.navigateTo({
-        url: "/pages/address/addressManage?id=" + item.id
+        url: "/pages/address/address-manage?id=".concat(item.id)
       });
     },
     //选择地址
     checkAddress: function checkAddress(item) {
       if (this.source == 1) {
-        //this.$api.prePage()获取上一页实例，在App.vue定义
-        //this.$api.prePage().addressData = item;
-        this.setDefault(item);
-        uni.navigateBack();
+        // 如果从其他页面进入，选择地址后返回
+        uni.navigateBack({
+          success: function success() {
+            // 返回上一页并传递选中的地址
+            var pages = getCurrentPages();
+            var prevPage = pages[pages.length - 2];
+            if (prevPage && prevPage.$vm) {
+              prevPage.$vm.selectedAddress = item;
+            }
+          }
+        });
       }
     },
-    setDefault: function setDefault(item) {
-      var li = this.addressList;
-      for (var i in li) {
-        var ite = li[i];
-        ite.default = false;
-      }
-      for (var j in li) {
-        var itee = li[j];
-        if (itee.id === item.id) {
-          itee.default = true;
+    // 切换默认地址
+    toggleDefault: function toggleDefault(item) {
+      var _this3 = this;
+      // 如果已经是默认地址或者正在设置中，不做操作
+      if (item.is_default == 1 || this.isSettingDefault) return;
+      uni.showModal({
+        title: '设置默认地址',
+        content: '确定要将此地址设为默认地址吗？',
+        success: function success(res) {
+          if (res.confirm) {
+            _this3.setDefault(item);
+          }
         }
-      }
-      this.$dataLocal("address", li);
+      });
+    },
+    setDefault: function setDefault(item) {
+      var _this4 = this;
+      // 防止重复点击
+      if (this.isSettingDefault) return;
+      this.isSettingDefault = true;
+
+      // 显示加载中
+      uni.showLoading({
+        title: '设置中...'
+      });
+
+      // 更新本地选中状态
+      this.addressList.forEach(function (address) {
+        address.is_default = address.id === item.id ? 1 : 0;
+      });
+      // 更新到服务器
+      this.$post("/wx_mini_app/wx_auth/address/set_default", {
+        address_id: item.id
+      }, function (res) {
+        console.log("res", res);
+        if (res.message) {
+          uni.hideLoading();
+          _this4.isSettingDefault = false;
+          console.error('设置默认地址失败:', res.message);
+          _this4.$toast('设置默认地址失败');
+          // 设置失败，恢复之前的状态
+          _this4.loadAddress();
+        } else {
+          uni.hideLoading();
+          _this4.isSettingDefault = false;
+          _this4.$toast('设置默认地址成功');
+        }
+      }, function (err) {
+        uni.hideLoading();
+        _this4.isSettingDefault = false;
+        console.error('设置默认地址失败:', err);
+        _this4.$toast('设置默认地址失败');
+        // 设置失败，恢复之前的状态
+        _this4.loadAddress();
+      });
     },
     addAddress: function addAddress() {
       uni.navigateTo({
         url: "/pages/address/address-manage"
       });
     },
+    // 复制地址
+    copyAddress: function copyAddress(item) {
+      var _this5 = this;
+      var fullAddress = "".concat(item.receiver_name || '', ", ").concat(item.receiver_phone || '', ", ").concat(item.province || '', " ").concat(item.city || '', " ").concat(item.district || '', " ").concat(item.detail_address || '');
+      uni.setClipboardData({
+        data: fullAddress,
+        success: function success() {
+          _this5.$toast('地址已复制到剪贴板');
+        }
+      });
+    },
     //添加或修改成功之后回调
     refreshList: function refreshList(data, type) {
-      //添加或修改后事件，这里直接在最前面添加了一条数据，实际应用中直接刷新地址列表即可
-      this.addressList.unshift(data);
-      console.log(data, type);
+      this.loadAddress(); // 重新加载地址列表
+    },
+    // 确认删除地址
+    confirmDelete: function confirmDelete(item) {
+      var _this6 = this;
+      uni.showModal({
+        title: '删除地址',
+        content: '确定要删除此地址吗？',
+        success: function success(res) {
+          if (res.confirm) {
+            _this6.deleteAddress(item);
+          }
+        }
+      });
+    },
+    // 删除地址
+    deleteAddress: function deleteAddress(item) {
+      var _this7 = this;
+      // 显示加载中
+      uni.showLoading({
+        title: '删除中...'
+      });
+
+      // 获取用户ID
+      var user = this.getUser() || {};
+      if (!user.id) {
+        uni.hideLoading();
+        this.$toast('请先登录');
+        return;
+      }
+
+      // 调用删除地址接口
+      this.$delete("/wx_mini_app/wx_auth/address/".concat(user.id), {
+        address_id: item.id
+      }, function (res) {
+        uni.hideLoading();
+        if (res && res.code === 200) {
+          _this7.$toast('删除地址成功');
+          // 删除成功后刷新列表
+          _this7.loadAddress();
+        } else {
+          console.error('删除地址失败:', res.message);
+          _this7.$toast('删除地址失败');
+        }
+      }, function (err) {
+        uni.hideLoading();
+        console.error('删除地址失败:', err);
+        _this7.$toast('删除地址失败');
+      });
     }
   }
 };

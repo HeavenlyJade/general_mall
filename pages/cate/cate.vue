@@ -157,6 +157,7 @@ import fixedSearch from '../../components/fixed-search/fixed-search.vue';
 					
 					return images[0] || ''
 				} catch(e) {
+					console.log('解析出错:', e)
 					return ''
 				}
 			},

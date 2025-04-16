@@ -189,17 +189,72 @@ var _default = {
       this.$refs.mpvueCityPicker.show();
     },
     locateAddress: function locateAddress(_id) {
-      var li = this.addressList;
-      for (var i in li) {
-        var ite = li[i];
-        if (parseFloat(ite.id) === parseFloat(_id)) {
-          this.addressData = ite;
-        }
+      var _this2 = this;
+      // 显示加载提示
+      uni.showLoading({
+        title: '加载中'
+      });
+
+      // 获取用户ID
+      var user = this.getUser() || {};
+      if (!user.id) {
+        uni.hideLoading();
+        this.$toast('请先登录');
+        return;
       }
+
+      // 调用获取单个地址详情接口
+      this.$get("/wx_mini_app/wx_auth/address/".concat(user.id, "/").concat(_id), {}, function (res) {
+        uni.hideLoading();
+        console.log("res", res);
+        if (res && res.code === 200 && res.data) {
+          // 转换API返回的数据格式为表单使用的格式
+          var item = res.data;
+          _this2.addressData = {
+            id: item.id,
+            name: item.receiver_name,
+            mobile: item.receiver_phone,
+            pickerText: "".concat(item.province, " ").concat(item.city, " ").concat(item.district).trim(),
+            addressName: item.detail_address,
+            default: item.is_default === 1
+          };
+        }
+      }, function (err) {
+        uni.hideLoading();
+        console.error('获取地址详情失败:', err);
+        _this2.$toast('获取地址详情失败');
+      });
     },
     loadAddress: function loadAddress() {
+      var _this3 = this;
       var _this = this;
-      // this.addressList=this.$dataLocal("address")||[];
+      // 显示加载提示
+      uni.showLoading({
+        title: '加载中'
+      });
+
+      // 获取用户ID
+      var user = this.getUser() || {};
+      if (!user.id) {
+        uni.hideLoading();
+        this.$toast('请先登录');
+        return;
+      }
+
+      // 调用地址列表接口
+      this.$get("/wx_mini_app/wx_auth/address/".concat(user.id), {}, function (res) {
+        uni.hideLoading();
+        if (res && res.code === 200 && res.items) {
+          _this3.addressList = res.items;
+        } else {
+          _this3.addressList = [];
+        }
+      }, function (err) {
+        uni.hideLoading();
+        console.error('获取地址列表失败:', err);
+        _this3.$toast('获取地址列表失败');
+        _this3.addressList = [];
+      });
     },
     switchChange: function switchChange(e) {
       var li = this.addressList;
@@ -215,17 +270,17 @@ var _default = {
     },
     //地图选择地址
     chooseLocation: function chooseLocation() {
-      var _this2 = this;
+      var _this4 = this;
       uni.chooseLocation({
         success: function success(data) {
-          _this2.addressData.addressName = data.name;
-          _this2.addressData.address = data.name;
+          _this4.addressData.addressName = data.name;
+          _this4.addressData.address = data.name;
         }
       });
     },
     //提交
     confirm: function confirm() {
-      var li = this.addressList;
+      var _this5 = this;
       var data = this.addressData;
       if (!data.name) {
         this.$toast('请填写收货人姓名');
@@ -240,28 +295,77 @@ var _default = {
         return;
       }
       if (!data.addressName) {
-        this.$toast('请在地图选择所在位置');
+        this.$toast('请填写详细地址');
         return;
       }
-      if (!data.area) {
-        //this.$toast('请填写门牌号信息');
-        //return;
+
+      // 显示加载提示
+      uni.showLoading({
+        title: '保存中'
+      });
+
+      // 获取用户ID
+      var user = this.getUser() || {};
+      if (!user.id) {
+        uni.hideLoading();
+        this.$toast('请先登录');
+        return;
       }
-      if (typeof data.id != "undefined") {
-        for (var i in li) {
-          var ite = li[i];
-          if (parseFloat(ite.id) === parseFloat(data.id)) {
-            ite = data;
+
+      // 准备提交的数据，完全符合接口格式
+      var data_list = data.pickerText.split('-');
+      var province = data_list[0];
+      var city = data_list[1];
+      var district = data_list[2];
+      var requestData = {
+        user_id: String(user.id),
+        receiver_name: data.name || null,
+        receiver_phone: data.mobile || null,
+        province: province,
+        city: city,
+        district: district,
+        detail_address: data.addressName || null,
+        postal_code: null,
+        is_default: data.default ? 1 : 0
+      };
+      if (data.id) {
+        // 编辑地址 - PUT请求
+        var apiUrl = "/wx_mini_app/wx_auth/address/".concat(user.id, "/").concat(data.id);
+        this.$put(apiUrl, requestData, function (result) {
+          uni.hideLoading();
+          if (result.code === 200) {
+            _this5.$toast('修改成功');
+            setTimeout(function () {
+              uni.navigateBack();
+            }, 800);
+          } else {
+            _this5.$toast(result.message || '修改失败');
           }
-        }
+        }, function (err) {
+          uni.hideLoading();
+          console.error('修改地址失败:', err);
+          _this5.$toast('修改失败');
+        });
       } else {
-        data.id = li.length;
-        li.push(data);
+        // 新增地址 - POST请求
+        var _apiUrl = "/wx_mini_app/wx_auth/address/".concat(user.id);
+        this.$post(_apiUrl, requestData, function (result) {
+          uni.hideLoading();
+          console.log("result", result);
+          if (result.code === 200) {
+            _this5.$toast('添加成功');
+            setTimeout(function () {
+              uni.navigateBack();
+            }, 800);
+          } else {
+            _this5.$toast(result.message || '添加失败');
+          }
+        }, function (err) {
+          uni.hideLoading();
+          console.error('添加地址失败:', err);
+          _this5.$toast('添加失败');
+        });
       }
-      this.$dataLocal("address", li);
-      setTimeout(function () {
-        uni.navigateBack();
-      }, 800);
     }
   }
 };
