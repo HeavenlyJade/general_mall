@@ -9,8 +9,8 @@ App.mpType = 'app'
 Vue.component('uniLoadMore',uniLoadMore) */
 
 
-/* import perparUtil from '@/static/js/idea-parse/index.js'
-Vue.prototype.$prepareHtml = perparUtil.prepareHtml; */
+// import perparUtil from './static/js/idea-parse/index.js'
+// Vue.prototype.$prepareHtml = perparUtil.prepareHtml;
 
 
 import util from "./static/js/utils/util.js"

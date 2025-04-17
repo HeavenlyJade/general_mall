@@ -53,16 +53,16 @@ page {
   justify-content: center;
   align-items: center;
   /* &.jia {
-  	&:before {
-  		content: "\e641";
+  		&:before {
+  			content: "\e641";
+  		}
   	}
-  }
 
-  &.jian {
-  	&:before {
-  		content: "\e643";
-  	}
-  } */
+  	&.jian {
+  		&:before {
+  			content: "\e643";
+  		}
+  	} */
 }
 .address-section {
   padding: 30rpx 0;

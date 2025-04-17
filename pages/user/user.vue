@@ -208,7 +208,6 @@ export default {
 								let userData = result.user_info ;
 								userData.wxHeadImg = userData.avatar || userInfo.avatarUrl;
 								userData.wxNickName = userData.nickname || userInfo.nickName;
-								console.log("userData",userData)
 								// 保存token
 								this.$dataLocal("token", result.access_token);
 								

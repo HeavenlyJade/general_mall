@@ -182,16 +182,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
 /* 底部分享 */
 .uni-share {
 
@@ -221,9 +211,7 @@
 
 	flex-direction: column;
 	align-items: center;
-	
-	/*width: 200rpx; */
-	width:20%;
+			width:20%;
 	margin-top: 0.2rem;
 }
 .uni-share-content-image {

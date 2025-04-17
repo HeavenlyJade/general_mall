@@ -51,36 +51,26 @@
 			return {
 				bottomData: [{
 						text: '微信',
-						icon: '../../static/ownshare/wxfriend.png',
+						icon: '/static/img/zwshare/weact.png',
 						name: 'weixin'
 					},
 					{
 						text: '朋友圈',
-						icon: '../../static/ownshare/wxtimeline.png',
+						icon: '/static/img/zwshare/shar.png',
 						name: 'timeline'
 					},
 					{
 						text: 'QQ',
-						icon: '../../static/ownshare/qq.png',
+						icon: '/static/img/zwshare/qq.png',
 						name: 'qq'
 					},
-					{
-						text: 'qq空间',
-						icon: '../../static/ownshare/qqtimeline.png',
-						name: 'miniProgram'
-					},
+			
 					
-					{
-						text: '新浪',
-						icon: '../../static/ownshare/sina.png',
-						name: 'sinaweibo'
-					},
-					
-					{
-						text: '复制链接',
-						icon: '../../static/ownshare/copy.png',
-						name: 'copy'
-					}
+					// {
+					// 	text: '复制链接',
+					// 	icon: '../../static/ownshare/copy.png',
+					// 	name: 'copy'
+					// }
 				],
 			}
 		},
@@ -224,9 +214,7 @@
 		/* #endif */
 		flex-direction: column;
 		align-items: center;
-		
-		//width: 200rpx;
-		width:20%;
+				width:20%;
 		margin-top: 0.2rem;
 	}
 	
