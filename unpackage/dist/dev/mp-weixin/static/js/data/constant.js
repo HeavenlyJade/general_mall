@@ -6,6 +6,8 @@ var CONFIG={
 	WS:"ws://192.168.1.6:8090/websocket/", 
 	// upload_url:"http://8.137.108.237:8012/api/v1",
 	upload_url:"https://dwjc.mcorg.com/api/v1",
+	data_secret_key:"wx755aabf27ec3641dWX6597"
+
 }
 CONFIG.API=CONFIG.host; //config+"api"
 

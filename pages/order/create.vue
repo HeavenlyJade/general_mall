@@ -125,6 +125,8 @@
 </template>
 
 <script>
+import CONFIG from '@/static/js/data/constant.js';
+
 
 
 export default {
@@ -164,6 +166,8 @@ export default {
 			},
 			submit_lock: 0,
 			goodsTotal: 0,
+			secretKey: CONFIG.data_secret_key // 直接从CONFIG中获取
+
 
 		}
 	},
@@ -191,11 +195,9 @@ export default {
 			var li = this.addressList;
 			// 首先找出默认地址
 			let foundDefault = false;
-			console.log("1223",li)
 			for (var i in li) {
 				var ite = li[i];
 				// 使用is_default字段判断是否默认
-				console.log("123",ite)
 
 				if (ite.is_default == 1) {
 					// 数据格式转换
@@ -210,7 +212,6 @@ export default {
 					break;
 				}
 			}
-			console.log("111this.addressData ",this.addressData )
 			// 如果没有默认地址，使用第一个地址
 			if (!foundDefault && li.length > 0) {
 				const ite = li[0];
@@ -222,7 +223,7 @@ export default {
 					area: ''
 				};
 			}
-			
+
 			// // 用户信息中已有接收地址的情况
 			// if (!!this.userInfo.receiveAddr) {
 			// 	if (this.addressData.name == "点击添加收货地址") { //本地没有地址地址才保存
@@ -237,26 +238,7 @@ export default {
 			// 		this.$post("user/update", u, (res) => { });
 			// 	}
 			// }
-			
-			// 计算邮费
-			this.postage = 0;
-			let cityList = this.addressData.pickerText.split("-");
-			let prov = cityList[0];
-			if (prov.indexOf("新疆") > -1
-				|| prov.indexOf("青海") > -1
-				|| prov.indexOf("西藏") > -1) {
-				this.postage = 15;
-			}
-			if (prov.indexOf("黑龙江") > -1
-				|| prov.indexOf("吉林") > -1
-				|| prov.indexOf("内蒙古") > -1
-				|| prov.indexOf("甘肃") > -1
-				|| prov.indexOf("宁夏") > -1) {
-				this.postage = 9;
-			}
-			if (prov.indexOf("北京") > -1) {
-				this.postage = 10;
-			}
+
 		},
 
 
@@ -272,20 +254,17 @@ export default {
 			this.$get(`/wx_mini_app/wx_auth/address/${user.id}`, {}, res => {
 				uni.hideLoading();
 				if (res && res.items) {
-					console.log("res.items", res.items)
 					_this.addressList = res.items;
-					console.log("11this.addressList",this.addressList)
 					this.locateAddress();
 				} else {
 					_this.addressList = [];
 				}
 			}, err => {
 				uni.hideLoading();
-				console.error('获取地址列表失败:', err);
 				_this.$toast('获取地址列表失败');
 				_this.addressList = [];
 			});
-	
+
 		},
 
 		loadData() {
@@ -295,7 +274,6 @@ export default {
 		},
 		calcGoodsAmount() {
 			var li = this.goods_list;
-			console.log("li", li)
 			var sum = 0;
 			for (var i in li) {
 				var ite = li[i];
@@ -332,7 +310,6 @@ export default {
 		},
 		//增加数量
 		add(item) {
-			console.log(item);
 			let p = 1;
 			if (item.goods.type == 1) {
 				p = 1;
@@ -368,10 +345,6 @@ export default {
 		},
 
 
-
-
-
-
 		_submit() {
 			if (this.addressData.name == "点击添加收货地址") {
 				this.$toast("请填写地址");
@@ -381,95 +354,74 @@ export default {
 				this.$toast("请选择邮寄区域");
 				return;
 			}
-
-
 			var orderInfo = {};
 			orderInfo.amount = this.goodsTotal;
 			orderInfo.benefit = this.cur_coupon.price;
 			orderInfo.postage = this.postage;
-			orderInfo.address = JSON.stringify(this.addressData);
-
-
-
-			var detail_list = [];
-			//var sum_buy_num=0;
-			var _type = 1;
+			var goodsDetail = [];
 
 			for (var i in this.goods_list) {
+				var param = {};
 				var ite = this.goods_list[i];
-				var _goods = {};
-				_goods.id = ite.goods.id;
-				_goods.name = ite.goods.name;
-				_goods.image = ite.goods.image;
-				_goods.type = ite.goods.type;
-
-				_goods.sku = ite.sku.sku;
-				_goods.price = ite.sku.price;
-
-				_goods.buyNum = ite.number;
-
-				detail_list.push(_goods);
-
-				//sum_buy_num=sum_buy_num+parseFloat(ite.number);	
-
-
+				console.log(ite);
+				param.product_id = ite.goods.product_id || ite.goods.id
+				param.number = ite.number
+				param.name = ite.goods.name
+				param.price = ite.goods.price
+				param.cart_id = ite.goods.cart_id
+				goodsDetail.push(param)
 			}
-			orderInfo.type = _type;
-			//orderInfo.buyNum=sum_buy_num;
 
-
-			orderInfo.goodsDetail = JSON.stringify(detail_list);
-
-
-			orderInfo.goodsMemo = this.goods_list[0].goods.name;
-			orderInfo.memo = this.desc || "memo";
-			//orderInfo.goodsId=this.goods_list[0].goods.id;
-
-
+			orderInfo.address = JSON.stringify(this.addressData);
+			orderInfo.goodsDetail = JSON.stringify(goodsDetail);
+			orderInfo.memo = this.desc
 			let single_user_info = {};
 			if (this.$isNull(this.userInfo.id)) {
 				this.$toast("请先登陆");
 				return;
 			}
+			const timestamp = new Date().getTime();
 			single_user_info.id = this.userInfo.id;
 			if (!!this.userInfo.headimage) single_user_info.headimage = this.userInfo.headimage;
 			if (!!this.userInfo.mobile) single_user_info.mobile = this.userInfo.mobile;
 			if (!!this.userInfo.nickname) single_user_info.nickname = this.userInfo.nickname;
 			orderInfo.userDetail = JSON.stringify(single_user_info);
 			orderInfo.userId = this.userInfo.id;
-
+			orderInfo.timestamp = timestamp;
 			if (1 == this.submit_lock) {
 				return;
 			}
 			this.submit_lock = 1;
 			let _this = this;
-
-
-
-			this.$post("order/create", orderInfo, function (res) {
-				let order_id = res.data.id;
-				let money = _this.goodsTotal - _this.cur_coupon.price + _this.postage;
-				if (_this.isH5()) {
-					_this.$naviExter('./external/wxpay.html?order_id=' + order_id + '&money=' + money)
-
-					/* _this.$post("order/hpj_unifield",{"order_id":order_id},function(res2){
-					   if(res2.status!=200){
-						   this.$toast(res2.msg)return ;
-					   }
-					   var obj=JSON.parse(res2.data);
-					   var url=obj.url;
-					   _this.$naviExter(url);
-				   }) */
-
-
-				} else {
-					_this.$redirectTo('/pages/pay/pay?order_id=' + order_id + '&money=' + money);
+			// 创建一个简单的签名字符串
+			const signStr = this.$hexHash({secretKey: this.secretKey, timestamp: orderInfo.timestamp});
+			orderInfo.signStr = signStr;
+			
+			this.$post("/wx_mini_app/shop-order", orderInfo, function (res) {
+				// 成功回调
+				if (res && res.code==200 ) {
+					let order_id = res.data.id;
+					let money = _this.goodsTotal - _this.cur_coupon.price + _this.postage;
+					if (_this.isH5()) {
+						_this.$naviExter('./external/wxpay.html?order_id=' + order_id + '&money=' + money)
+					} else {
+						_this.$redirectTo('/pages/pay/pay?order_id=' + order_id + '&money=' + money);
+					}
+				
+				} 
+				else if(res && res.code==400 )  {
+					_this.$toast(res.message);
 				}
-
-			})
-
-
-
+				else {
+					_this.submit_lock = 0; // 重置锁
+					_this.$toast('订单提交失败，请重试');
+				}
+			}, function(err) {
+				// 添加错误回调
+				console.error('订单提交失败', err);
+				_this.submit_lock = 0; // 重置锁
+				_this.$toast('订单提交失败，请重试');
+			});
 		},
 		stopPrevent() { }
 	}

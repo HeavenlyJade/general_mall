@@ -216,14 +216,6 @@ export default {
 	width: 100%;
 	background-color: #fff;
 	display: flex;
-
-	.left,
-	.right {
-		//position: absolute;		
-		//top: 100upx;
-		//bottom: 0upx;
-	}
-
 	.left {
 		width: 24%;
 		left: 0upx;

@@ -84,6 +84,7 @@ export default {
 
 	onLoad() {
 		//this.loadData();
+		// this.getCartList();
 
 		this.loadUserInfo();
 
@@ -151,7 +152,7 @@ export default {
 					title: '购物车数据加载失败',
 					icon: 'none'
 				});
-			}, true) // 开启本地缓存
+			}, false) // 开启本地缓存
 		},
 
 		count() {

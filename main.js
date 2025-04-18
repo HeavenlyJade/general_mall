@@ -106,6 +106,14 @@ Vue.prototype.SEND_WS_MSG = wsUtil.SEND_WS_MSG;
 Vue.prototype.CLOSE_WS= wsUtil.CLOSE_WS;
 
 
+import hashUtil from "./static/js/utils/hashUtil.js"
+
+// Then add these prototype methods among your other Vue prototype assignments
+Vue.prototype.$simpleHash = hashUtil.simpleHash;
+Vue.prototype.$hashCode = hashUtil.hashCode;
+Vue.prototype.$hexHash = hashUtil.hexHash;
+Vue.prototype.$hashEquals = hashUtil.hashEquals
+
 /* ================================================================== */
 
 
