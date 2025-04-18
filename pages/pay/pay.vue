@@ -15,7 +15,6 @@
 				</view>
 				<label class="radio">
 					<radio value="" color="#fa436a" :checked='payType == 1' />
-					</radio>
 				</label>
 			</view>
 			<!-- <view class="type-item b-b" @click="changePayType(2)">

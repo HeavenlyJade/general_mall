@@ -175,8 +175,8 @@ export default {
 
 	},
 	onShow() {
-		this.loadData()
 		this.loadAddress();
+		this.loadData()
 	},
 	watch: {
 		goods_list: {
