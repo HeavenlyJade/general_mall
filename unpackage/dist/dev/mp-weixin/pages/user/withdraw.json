@@ -1,7 +1,0 @@
-{
-  "navigationBarTitleText": "发起提现",
-  "navigationStyle": "default",
-  "usingComponents": {
-    "popup-layer": "/components/popup-layer/popup-layer"
-  }
-}

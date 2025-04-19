@@ -1,7 +1,0 @@
-{
-  "navigationBarTitleText": "推荐记录",
-  "navigationStyle": "default",
-  "usingComponents": {
-    "ms-tabs": "/components/ms-tabs/ms-tabs"
-  }
-}

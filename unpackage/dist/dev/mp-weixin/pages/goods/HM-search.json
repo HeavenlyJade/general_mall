@@ -1,7 +1,0 @@
-{
-  "navigationBarTitleText": "商品搜索",
-  "navigationStyle": "default",
-  "usingComponents": {
-    "m-search": "/components/mehaotian-search-revision/mehaotian-search-revision"
-  }
-}

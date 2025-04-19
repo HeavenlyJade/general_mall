@@ -1,7 +1,0 @@
-{
-  "navigationBarTitleText": "物流详情",
-  "navigationStyle": "default",
-  "usingComponents": {
-    "ali": "/components/wuliu/WuLiu-step"
-  }
-}

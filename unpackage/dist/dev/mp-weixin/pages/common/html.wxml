@@ -1,1 +1,0 @@
-<view class="w100p h100p"><view style="margin-top:1rem;"><rich-text nodes="{{htmldata}}"></rich-text></view></view>

@@ -1,7 +1,0 @@
-{
-  "navigationStyle": "custom",
-  "usingComponents": {
-    "code-elf-guide": "/components/code-elf-guide/code-elf-guide",
-    "policy": "/components/code-elf-guide/policy"
-  }
-}
