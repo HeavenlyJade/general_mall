@@ -55,19 +55,19 @@
 				</view>
 			</view>
 			<view class="order-icons">
-				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?stat=待付款')">
+				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?stat=1')">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/pendi_pay.png" class="tool-icon-image"></image>
 					</view>
 					<text class="icon-text">待付款</text>
 				</view>
-				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?stat=待发货')">
+				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?stat=2')">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/pending_ship.png" class="tool-icon-image"></image>
 					</view>
 					<text class="icon-text">待发货</text>
 				</view>
-				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?stat=已完成')">
+				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?status=已完成')">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/completed.png" class="tool-icon-image"></image>
 					</view>
