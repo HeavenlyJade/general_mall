@@ -374,6 +374,7 @@
 			  }
 			
 		}
+		
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
@@ -413,7 +414,14 @@
 				"iconPath": "static/tab/tab-my.png",
 				"selectedIconPath": "static/tab/tab-my-current.png",
 				"text": "我的"
+			},
+			{
+				"pagePath": "pages/distribution/index",
+				"iconPath": "static/tab/tab-my.png",
+				"selectedIconPath": "static/tab/tab-my-current.png",
+				"text": "分销"
 			}
+	
 	
 		]
 	}
