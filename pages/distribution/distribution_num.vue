@@ -85,39 +85,37 @@ export default {
     };
   },
   methods: {
-    async fetchTreeData() {
-      // 调用API获取树状数据
-      await wx.request({
-        url: this.apiUrl+ '/api/v1/mini_core/distribution_members',
-        method: 'GET',
-        data: {
-          user_id: this.uid
-        },
-        success: (res) => {
-          if (res.data && res.data.data) {
-            console.log("res.data.data", res.data.data);
-            // 设置数据
-            this.treeData = res.data.data;
-            // 默认展开根节点
-            if (this.treeData.id) {
-              this.expandedNodes = [this.treeData.id];
-            }
-          } else {
-            wx.showToast({
-              title: '获取数据失败',
-              icon: 'none'
-            });
+    fetchTreeData() {
+      // 显示加载提示
+      uni.showLoading({ title: '加载中...' });
+      
+      // 使用统一的$get方法而不是wx.request
+      this.$get("/wx_mini_app/wx/distribution_members", {
+      }, (response) => {
+        // 成功回调
+        if (response && response.code === 200 && response.data) {
+          console.log("response.data", response.data);
+          // 设置数据
+          this.treeData = response.data;
+          // 默认展开根节点
+          if (this.treeData.id) {
+            this.expandedNodes = [this.treeData.id];
           }
-        },
-        fail: () => {
-          wx.showToast({
-            title: '网络请求失败',
+        } else {
+          uni.showToast({
+            title: '获取数据失败',
             icon: 'none'
           });
-        },
-        complete: () => {
-          wx.hideLoading();
         }
+        uni.hideLoading();
+      }, (error) => {
+        // 错误回调
+        console.error('获取分销成员数据失败:', error);
+        uni.showToast({
+          title: '网络请求失败',
+          icon: 'none'
+        });
+        uni.hideLoading();
       });
     },
     
@@ -161,30 +159,28 @@ export default {
         return;
       }
       
-      const app = getApp();
-      wx.showLoading({ title: '搜索中...' });
-      wx.request({
-        url: app.globalData.apiUrl + '/api/v1/mini_core/distribution_members',
-        method: 'GET',
-        data: {
-          user_id: this.uid,
-          ser_name: this.searchText
-        },
-        success: (res) => {
-          if (res.statusCode === 200 && res.data.data) {
-            this.treeData = res.data.data;
-            // 展开包含搜索结果的节点
-            this.expandRelevantNodes(this.treeData, this.searchText);
-          } else {
-            wx.showToast({
-              title: '搜索失败',
-              icon: 'none'
-            });
-          }
-        },
-        complete: () => {
-          wx.hideLoading();
+      uni.showLoading({ title: '搜索中...' });
+      this.$get("/wx_mini_app/wx/distribution_members", {
+        ser_name: this.searchText
+      }, (response) => {
+        if (response && response.code === 200 && response.data) {
+          this.treeData = response.data;
+          // 展开包含搜索结果的节点
+          this.expandRelevantNodes(this.treeData, this.searchText);
+        } else {
+          uni.showToast({
+            title: '搜索失败',
+            icon: 'none'
+          });
         }
+        uni.hideLoading();
+      }, (error) => {
+        console.error('搜索失败:', error);
+        uni.showToast({
+          title: '网络请求失败',
+          icon: 'none'
+        });
+        uni.hideLoading();
       });
     },
     

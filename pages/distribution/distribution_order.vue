@@ -309,28 +309,22 @@ export default {
       // 从起始日期和结束日期解析出日期范围
       const [startDate, endDate] = this.dateRange.split('至');
 
-      await wx.request({
-        url: this.apiUrl + '/api/v1/mini_core/distribution_income',
-        method: 'GET',
-        data: {
-          start_date: startDate,
-          end_date: endDate,
-          status: this.activeTab,
-          user_id: this.uid
-        },
-        success: (response) => {
-          console.log("fetchCommissionData", response.data);
-          if (response.data && response.data.code === 200) {
-            this.commissions = response.data.data;
-          }
-        },
-        fail: (error) => {
-          console.error('Failed to fetch commission data:', error);
-          wx.showToast({
-            title: '获取数据失败',
-            icon: 'none'
-          });
+      this.$get("/mini_core/distribution_income", {
+        start_date: startDate,
+        end_date: endDate,
+        status: this.activeTab,
+        user_id: this.uid
+      }, (response) => {
+        console.log("fetchCommissionData", response);
+        if (response && response.code === 200) {
+          this.commissions = response.data;
         }
+      }, (error) => {
+        console.error('Failed to fetch commission data:', error);
+        uni.showToast({
+          title: '获取数据失败',
+          icon: 'none'
+        });
       });
     },
     geDateDef() {

@@ -1,7 +1,7 @@
 <template>
   <view class="container">
     <view class="header">
-      <image class="header-bg" src="/static/images/distribution-bg.png"></image>
+      <image class="header-bg" src="/static/img/distribution/empty.jpg"></image>
       <view class="title">分销规则</view>
     </view>
 
@@ -166,7 +166,7 @@ export default {
 <style>
 .container {
   padding-bottom: 40rpx;
-  background-color: #f8f8f8;
+  /* background-color: #f8f8f8; */
   min-height: 100vh;
 }
 

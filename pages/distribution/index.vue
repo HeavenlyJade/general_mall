@@ -11,14 +11,17 @@
     <!-- 用户信息区域 -->
     <div class="user-info-container">
       <div class="avatar">
-        <img src="/static/images/user.png" alt="用户头像" />
+        <image class="avatar-img" mode="aspectFill" 
+          :src="userInfo.avatar || getConst().defaultAvatar" 
+          :class="{'avatar-logged': !!userInfo.id}">
+        </image>
       </div>
       <div class="user-details">
         <div class="username">{{ userData.real_name || '未设置姓名' }}</div>
         <div class="tag-container">
           <span class="tag">分销等级:LV{{ userData.grade_id || 0 }}</span>
         </div>
-        <div class="referrer">上级分销：{{ userInfo.referrer || '无' }}</div>
+        <div class="referrer">上级分销：{{ userData.referrer || '无' }}</div>
       </div>
     </div>
 
@@ -116,27 +119,51 @@ export default {
     }
   },
   methods: {
-    async fetchDistributionData() {
+    getuser() {
+      // 获取用户信息，与user.vue页面保持一致
+      let user = this.getUser() || { avatar: '/static/img/user/default-head.png', nickName: 'noname' };
+      this.userInfo = user;
+    },
+    fetchDistributionData() {
       const that = this; // 保存this引用
-      this.$get("/wx_mini_app/distribution_wx", {}, function(response) {
+      this.$get("/wx_mini_app/wx/distribution_wx", {}, function(response) {
         console.log(response);
-        if (response.data) {
-          const responseData = response.data.data;
-          // 使用that而不是this
-          if (responseData.distribution) {
+        
+        // 首先检查响应是否成功且含有data
+        if (response && response.code === 200 ) {
+          // 检查data.data是否存在
+          const responseData = response.data || {};
+          
+          // 使用that而不是this，添加额外的空对象判断防止undefined错误
+          if (responseData && responseData.distribution) {
             that.userData = responseData.distribution;
           }
 
-          // 更新收入数据
-          if (responseData.income && responseData.income.data) {
-            that.incomeData = responseData.income.data;
+          // 更新收入数据，添加额外的检查
+          if (responseData && responseData.income ) {
+            that.incomeData = responseData.income;
           }
 
-          // 更新每日/月度/总收入
-          if (responseData.income_d_m_a && responseData.income_d_m_a.data) {
-            that.incomeDMA = responseData.income_d_m_a.data;
+          // 更新每日/月度/总收入，添加额外的检查
+          if (responseData && responseData.income_d_m_a ) {
+            that.incomeDMA = responseData.income_d_m_a;
           }
+        } else {
+          // 处理错误情况
+          console.error('获取分销数据失败:', response);
+          // 可以添加用户提示
+          uni.showToast({
+            title: '获取数据失败',
+            icon: 'none'
+          });
         }
+      }, function(error) {
+        // 添加错误回调处理
+        console.error('请求出错:', error);
+        uni.showToast({
+          title: '网络请求失败',
+          icon: 'none'
+        });
       });
     },
     navigateTo(page) {
@@ -149,10 +176,12 @@ export default {
     },
   },
   onShow() {
+    this.getuser();
     this.fetchDistributionData()
   },
    onLoad(e) {
-    //  this.fetchDistributionData()
+    // this.getuser();
+    // this.fetchDistributionData()
    },
 }
 </script>
@@ -381,28 +410,28 @@ export default {
 .order-icon {
   background-color: #ff9c38;
   border-radius: 50%;
-  background-image: url('/static/images/dindan.png');
+  background-image: url('/static/img/distribution/dindan.png');
   /* 实际项目中替换为实际图标: background-image: url('@/assets/icons/order.png'); */
 }
 
 .commission-icon {
   background-color: #ff6b6b;
   border-radius: 50%;
-  background-image: url('/static/images/yongj.png');
+  background-image: url('/static/img/distribution/yongj.png');
   /* 实际项目中替换为实际图标: background-image: url('@/assets/icons/commission.png'); */
 }
 
 .statement-icon {
   background-color: #4a90e2;
   border-radius: 50%;
-  background-image: url('/static/images/zhangdan.png');
+  background-image: url('/static/img/distribution/zhangdan.png');
   /* 实际项目中替换为实际图标: background-image: url('@/assets/icons/statement.png'); */
 }
 
 .rules-icon {
   background-color: #1ea875;
   border-radius: 50%;
-  background-image: url('/static/images/fenxguiz.png');
+  background-image: url('/static/img/distribution/fenxguiz.png');
 
   /* 实际项目中替换为实际图标: background-image: url('@/assets/icons/rules.png'); */
 }

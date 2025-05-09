@@ -373,7 +373,47 @@
 				  
 			  }
 			
-		}
+		},
+		{
+			"path": "pages/distribution/index",
+			"style": {
+			  "navigationBarTitleText": "分销中心",
+			  "navigationStyle": "default",
+			  "h5": {}
+			}
+		  },
+		  {
+			"path": "pages/distribution/distribution_order",
+			"style": {
+			  "navigationBarTitleText": "佣金明细",
+			  "navigationStyle": "default",
+			  "h5": {}
+			}
+		  },
+		  {
+			"path": "pages/distribution/withdrawal_records",
+			"style": {
+			  "navigationBarTitleText": "提现记录",
+			  "navigationStyle": "default",
+			  "h5": {}
+			}
+		  },
+		  {
+			"path": "pages/distribution/distribution_rule",
+			"style": {
+			  "navigationBarTitleText": "分销规则",
+			  "navigationStyle": "default",
+			  "h5": {}
+			}
+		  },
+		  {
+			"path": "pages/distribution/distribution_num",
+			"style": {
+			  "navigationBarTitleText": "分销成员",
+			  "navigationStyle": "default",
+			  "h5": {}
+			}
+		  }
 		
 	],
 	"globalStyle": {
@@ -414,15 +454,15 @@
 				"iconPath": "static/tab/tab-my.png",
 				"selectedIconPath": "static/tab/tab-my-current.png",
 				"text": "我的"
-			},
-			{
-				"pagePath": "pages/distribution/index",
-				"iconPath": "static/tab/tab-my.png",
-				"selectedIconPath": "static/tab/tab-my-current.png",
-				"text": "分销"
 			}
 	
 	
 		]
+	},
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			"date-picker": "@/components/datePicker/datePicker"
+		}
 	}
 }
