@@ -413,6 +413,14 @@
 			  "navigationStyle": "default",
 			  "h5": {}
 			}
+		  },
+		  {
+			"path": "pages/store/store",
+			"style": {
+			  "navigationBarTitleText": "门店中心",
+			  "navigationStyle": "default",
+			  "h5": {}
+			}
 		  }
 		
 	],

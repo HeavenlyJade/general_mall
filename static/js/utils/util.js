@@ -414,13 +414,5 @@ Core.prototype.updateAppVersion=function(){ //要在initconfig后面调用
 }
 
 
-
-
-
-
-
-
-
-
 var mainUtil=new Core();
 export default mainUtil

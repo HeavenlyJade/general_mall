@@ -88,7 +88,7 @@
 				<text class="section-title">我的工具</text>
 			</view>
 			<view class="tools-grid">
-				<view class="tool-item" @click="$navigateTo('/pages/index/guider')">
+				<view class="tool-item" @click="$navigateTo('/pages/store/store')">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/store.png" class="tool-icon-image"></image>
 					</view>
@@ -115,7 +115,7 @@
 					<text class="tool-text">我的名片</text>
 				</view>
 		
-				<view class="tool-item" @click="testClick">
+				<view class="tool-item" @click="$navigateTo('/pages/distribution/index')">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/distribution.png" class="tool-icon-image"></image>
 					</view>
@@ -167,16 +167,6 @@ export default {
 	},
 	methods: {
 		// 添加到methods中
-		testClick() {
-     try {
-       console.log("点击分销中心按钮");
-       this.$toast("尝试跳转到分销中心");
-       this.$navigateTo('/pages/distribution/index');
-     } catch(e) {
-       console.error("错误：", e);
-       this.$toast("跳转出错：" + JSON.stringify(e));
-     }
-   },
 		getUserProfile() {
 			// 直接调用getUserProfile，必须在用户点击事件中直接调用
 			wx.getUserInfo({

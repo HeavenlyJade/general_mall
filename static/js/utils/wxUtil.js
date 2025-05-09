@@ -1,8 +1,4 @@
 
-
-
-
-
 import {post} from "./requestUtil.js";
 import {isNull} from "./strUtil.js";
 import {data_local} from "./cacheUtil.js"
@@ -12,8 +8,6 @@ import {isWeixin,isH5,isApp,getUser,setUser,getQuery,getConfig,rmLoginMsg,naviga
 function Core() {
 
 }
-
-
 
 var get_wxh5_User=function(func,param,g_prepage){
 			var userInfo = getUser(); 					

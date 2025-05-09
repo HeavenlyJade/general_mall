@@ -148,8 +148,8 @@
 			confirmweixin() {
 				let that = this
 				if(this.isApp()){
-					this.$post("wxapi/unifiedorder_app", {
-						id: this.order_id
+					this.$post("/wx_mini_app/shop_pay/wx_shop_pay", {
+						oder_id: this.order_id
 					}, (res) =>{
 						if(res.status!=200){
 							this.$toast(res.msg)
@@ -186,8 +186,8 @@
 						this.$msg(res.msg)
 					})
 				}else{
-					this.$post("wxapi/unifiedorder_mp", {
-						id: this.order_id
+					this.$post("/wx_mini_app/shop_pay/wx_shop_pay", {
+						oder_id: this.order_id
 					}, (res) =>{
 						console.log("wxunifiedorder_app",res)
 						if(res.status!=200){
