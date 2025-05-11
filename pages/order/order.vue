@@ -42,9 +42,10 @@
 			</view>
 
 			<!-- 根据订单状态显示不同的按钮 -->
-			<view class="action-box b-t" v-if="item.order_info.status === '待付款'">
+			<view class="action-box b-t" v-if="item.order_info.status === '待支付' || item.order_info.status === '待付款'">
 				<button class="action-btn" @click="cancelOrder(item)">取消订单</button>
-				<button class="action-btn recom" @click="topay(item)">立即支付</button>
+				<!-- <button class="action-btn" @click="continuePay(item)">继续支付</button> -->
+				<button class="action-btn recom" @click="topay(item)">继续支付</button>
 			</view>
 
 			<view class="action-box b-t" v-if="item.order_info.status === '待发货'">
@@ -98,8 +99,8 @@ export default {
 					text: '全部',
 				},
 				{
-					state: '待付款',
-					text: '待付款',
+					state: '待支付',
+					text: '待支付',
 				},
 				{
 					state: '待发货',
@@ -301,6 +302,12 @@ export default {
 			this.reload_list(); */
 
 
+		},
+
+		continuePay(item) {
+			let order_id = item.order_info.id;
+			let money = item.order_info.actual_amount;
+			this.$redirectTo('/pages/pay/pay?order_id=' + order_id + '&money=' + money);
 		},
 
 

@@ -149,29 +149,39 @@
 				let that = this
 				if(this.isApp()){
 					this.$post("/wx_mini_app/shop_pay/wx_shop_pay", {
-						oder_id: this.order_id
+						order_id: this.order_id
 					}, (res) =>{
-						if(res.status!=200){
+						if(res.code!=200){
 							this.$toast(res.msg)
 							return 
 						}
 						var orderInfo={
-							"appid":res.data.appid,
-							"noncestr":res.data.noncestr,
+							"timeStamp":res.data.time_stamp,
+							"nonceStr":res.data.nonce_str,
 							"package":res.data.package,
-							"partnerid":res.data.partnerid,
-							"prepayid":res.data.prepayid,
-							"timestamp":res.data.timestamp,
-							"sign":res.data.sign
+							"signType":res.data.sign_type,
+							"paySign":res.data.pay_sign,
+							// "appid":res.data.appid,
+							// "prepayid":res.data.prepayid,
 						}
+						console.log("orderInfo",orderInfo)
 						var reqdata={}
 						reqdata.provider="wxpay";
 						reqdata.orderInfo = orderInfo;
-					
+						
 						reqdata.success =  (res) =>{
 								this.$toast("支付成功")
 								
-								this.$redirectTo('/pages/order/order?stat=2');
+								// 添加支付成功后的请求
+								this.$post("/wx_mini_app/shop-order/payment/" + this.order_id, {}, (response) => {
+									console.log("支付状态更新结果", response)
+									// 支付状态更新成功后跳转
+									this.$redirectTo('/pages/order/order?stat=待发货');
+								}, (err) => {
+									console.error("支付状态更新失败", err)
+									// 即使状态更新失败，也跳转到订单页面
+									this.$redirectTo('/pages/order/order?stat=待发货');
+								});
 							}
 						reqdata.fail	=(err) =>{
 							console.log(err)
@@ -187,48 +197,46 @@
 					})
 				}else{
 					this.$post("/wx_mini_app/shop_pay/wx_shop_pay", {
-						oder_id: this.order_id
+						order_id: this.order_id
 					}, (res) =>{
 						console.log("wxunifiedorder_app",res)
-						if(res.status!=200){
+						if(res.code!=200){
 							this.$toast(res.msg)
 							return 
 						}						
-						var orderInfo={
-							"appid":res.data.appId,
-							"noncestr":res.data.nonceStr,
+						var reqdata = {
+							"timeStamp":res.data.time_stamp,
+							"nonceStr":res.data.nonce_str,
 							"package":res.data.package,
-							"partnerid":res.data.partnerid,
-							"prepayid":res.data.prepayid,
-							"timestamp":res.data.timeStamp,
-							"sign":res.data.paySign
+							"signType":res.data.sign_type,
+							"paySign":res.data.pay_sign,
+						};
+						console.log("reqdata",reqdata)
+						reqdata.success = (res) =>{
+							console.log("支付成功的结果",res)
+							this.$toast("支付成功")
+							
+							// 添加支付成功后的请求
+							this.$post("/wx_mini_app/shop-order/payment/" + this.order_id, {}, (response) => {
+								console.log("支付状态更新结果", response)
+								// 支付状态更新成功后跳转
+								this.$redirectTo('/pages/order/order?stat=待发货');
+							}, (err) => {
+								console.error("支付状态更新失败", err)
+								// 即使状态更新失败，也跳转到订单页面
+								this.$redirectTo('/pages/order/order?stat=待发货');
+							});
 						}
-						var reqdata={}
-						reqdata.provider="wxpay";
-						reqdata.orderInfo = orderInfo;
 						
-						reqdata.timeStamp = res.data.timeStamp;
-						reqdata.nonceStr = res.data.nonceStr;
-						reqdata.package =res.data.package;
-						
-						reqdata.signType ="MD5";
-						reqdata.paySign =res.data.paySign;
-					
-						reqdata.success =  (res) =>{
-								this.$toast("支付成功")
-								
-								this.$redirectTo('/pages/order/order?stat=2');
-							}
-						reqdata.fail	=(err) =>{
+						reqdata.fail = (err) =>{
 							console.log(err)
-								that.$toast("支付失败"+err.errMsg)
-							}
-						
+							that.$toast("支付失败"+err.errMsg)
+						}
 						
 						uni.requestPayment(reqdata);
 						
 					},res=>{
-						console.log(reqdata)
+						console.log("res",res)
 						this.$msg(res.msg)
 					})
 						
