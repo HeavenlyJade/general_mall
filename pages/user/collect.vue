@@ -92,7 +92,7 @@
 
 			navToLogin(){
 				
-				this.$navigateTo("pages/login/login")
+				this.$navigateTo("pages/user/user")
 			},
 
 			//删除

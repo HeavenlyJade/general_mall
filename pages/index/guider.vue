@@ -1,38 +1,94 @@
 <template>
-    <view class="main">
-        <code-elf-guide ></code-elf-guide>
-        <policy ></policy>
-    </view>
+	<view class="app-start">
+		<u-swiper
+			:list="banners"
+			keyName="picUrl"
+			:autoplay="false"
+			height="100vh"
+			@change="swiperchange"
+			@click="imgClick"
+		></u-swiper>
+		<view class="btn">
+			<u-button v-if="swiperCurrent + 1 == swiperMaxNumber" type="success" text="进入店铺" @click="goNextPage"></u-button>
+		</view>
+	</view>
 </template>
+
 <script>
-   import codeElfGuide from '@/components/code-elf-guide/code-elf-guide.vue'
-   import policy from '@/components/code-elf-guide/policy.vue'
-   
-    export default {
-        components: {
-            codeElfGuide,policy
-        },
-        data() {
-            return {
-            }
-        },
-		onLoad() {
-			
+	export default {
+		data() {
+			return {
+				banners: [],
+				swiperMaxNumber: 0,
+				swiperCurrent: 0
+			}
 		},
-		onShow(){
-			
+		created() {
+
 		},
+		mounted() {
 
-        methods: {
+		},
+		onReady() {
 
-        }
-    }
+		},
+		onLoad(e) {
+            this.goNextPage()
+			// const app_show_pic_version = this.app_show_pic_version
+			// if (app_show_pic_version && app_show_pic_version == getApp().globalData.version) {
+			// 	this.goNextPage()
+			// } else {
+			// 	console.log(4);
+			// 	// 显示启动图轮播
+			// 	this.showBanners()
+			// }
+		},
+		onShow() {
+
+		},
+		methods: {
+			goNextPage() {
+                uni.switchTab({
+						url: '/pages/index/index',
+					});
+			},
+			async showBanners() {
+				// https://www.yuque.com/apifm/nu0f75/ms21ki
+				const res = await this.$wxapi.banners({
+					type: 'app'
+				})
+				if (res.code == 0) {
+					this.banners = res.data
+					this.swiperMaxNumber = res.data.length
+				} else {
+					this.goNextPage()
+				}
+			},
+			swiperchange(e) {
+				this.swiperCurrent = e.current
+			},
+			imgClick(index) {
+				if (index + 1 != this.swiperMaxNumber) {
+					uni.showToast({
+						title: '左滑进入',
+						icon: 'none',
+					})
+				}
+			}
+		}
+	}
 </script>
-
-<style>
- page,.main{
- 	width: 100%;
- 	height: 100%;
- }
-  
+<style scoped lang="scss">
+	.app-start {
+		.btn {  
+		  position: absolute;  
+		  left: 0;
+		  width: 100vw;
+		  padding: 0 32rpx;
+		  box-sizing: border-box;
+		  bottom: 50rpx;  
+		  display: flex;  
+		  justify-content: center;
+		}
+	}
 </style>

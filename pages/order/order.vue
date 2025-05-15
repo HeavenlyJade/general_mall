@@ -62,6 +62,10 @@
 				<button class="action-btn" @click="to_comment(item)">评价</button>
 				<button class="action-btn" @click="to_return(item)">申请售后</button>
 			</view>
+
+			<view class="action-box b-t" v-if="item.order_info.status === '已发货'">
+				<button class="action-btn" @click="showLogistics(item)">查看物流</button>
+			</view>
 		</view>
 
 		<swiper :current="tabCurrentIndex" class="swiper-box" duration="300" @change="changeTab">
@@ -107,8 +111,8 @@ export default {
 					text: '待发货',
 				},
 				{
-					state: '待收货',
-					text: '待收货',
+					state: '已发货',
+					text: '已发货',
 				},
 				{
 					state: '已完成',
@@ -247,8 +251,8 @@ export default {
 					return '待付款';
 				case '待发货':
 					return '待发货';
-				case '待收货':
-					return '待收货';
+				case '已发货':
+					return '已发货';
 				case '已完成':
 					return '已完成';
 				case '已取消':

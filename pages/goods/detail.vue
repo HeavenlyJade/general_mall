@@ -515,7 +515,7 @@ export default {
 
 		share() {
 			if (this.$isNull(this.userInfo.id)) {
-				this.$navigateTo("/pages/login/login")
+				this.$navigateTo("/pages/user/user")
 				this.$toast("请先登陆");
 				return;
 			}
@@ -560,7 +560,7 @@ export default {
 		},
 		cart() {
 			if (this.$isNull(this.userInfo.id)) {
-				this.$navigateTo("/pages/login/login")
+				this.$navigateTo("/pages/user/user")
 				this.$toast("请先登陆");
 				return;
 			}
@@ -596,7 +596,7 @@ export default {
 		buy() {
 			if (this.$isNull(this.userInfo.id)) {
 				this.$toast("请先登陆");
-				this.$navigateTo("/pages/login/login")
+				this.$navigateTo("/pages/user/user")
 				return;
 			}
 			let param = {};

@@ -146,7 +146,7 @@
 						},
 					{
 						state: 3,
-						text: '待收货',
+						text: '已发货',
 						loadingType: 'more',
 						orderList: []
 					},

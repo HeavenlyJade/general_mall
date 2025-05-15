@@ -158,7 +158,7 @@ export default {
 			orderStatusList: [
 				{ name: '待付款', icon: 'iconfont icon31daifukuan', status: 10, "uri": "/pages/order/order?stat=1" },
 				{ name: '待发货', icon: 'iconfont icon31daifahuo', status: 30, "uri": "/pages/order/order?stat=2" },
-				{ name: '待收货', icon: 'iconfont icon31daishouhuo', status: 40, "uri": "/pages/order/order?stat=3" },
+				{ name: '已发货', icon: 'iconfont icon31daishouhuo', status: 40, "uri": "/pages/order/order?stat=3" },
 				{ name: '待评价', icon: 'iconfont icon31daipingjia', status: 50, "uri": "/pages/order/order?stat=4" },
 				{ name: '全部', icon: 'iconfont icon31yiguanzhudianpu', status: 55, "uri": "/pages/order/order" }
 			],

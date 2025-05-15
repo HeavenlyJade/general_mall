@@ -185,7 +185,7 @@ export default {
 			this.$set(this[key][index], 'loaded', 'loaded');
 		},
 		navToLogin() {
-			this.$navigateTo("pages/login/login")
+			this.$navigateTo("pages/user/user")
 		},
 		//选中状态处理
 		check(type, index) {

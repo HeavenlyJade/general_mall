@@ -20,7 +20,7 @@
 			
 			<view class="login-function">
 				<!-- <view class="login-forget" @click="go_forget"></view> -->
-				<view class="login-register" @click="$navigateTo('/pages/login/login')">返回登陆</view>
+				<view class="login-register" @click="$navigateTo('/pages/user/user')">返回登陆</view>
 			</view>
 		</view>
 		<view class="forget-btn" @click="submit">
@@ -60,7 +60,7 @@
 				this.$post("user/resetpwd",this.userInfo).then(res=>{
 					this.$toast("密码修改成功,请重新登陆")
 					setTimeout(()=>{
-							this.$navigateTo("/pages/login/login");
+							this.$navigateTo("/pages/user/user");
 					},1000)
 				},res=>{
 					this.$toast(res.msg)

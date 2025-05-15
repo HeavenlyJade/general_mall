@@ -53,12 +53,13 @@ export default {
 	},
 	methods: {
 		view_logi(item){
+			console.log("item",item);
 			var pdata={};			
 			pdata.type=item.type;
 			pdata.postid=item.order;
 			
 			var _this =this;
-			this.$post("order/getlogimsg", pdata,function(r) {
+			this.$post("/order/getlogimsg", pdata,function(r) {
 				if (r.status == 200) {
 					var obj=r.data;
 					var list=obj.traces;
