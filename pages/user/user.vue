@@ -46,8 +46,8 @@
 			</view>
 		</view>
 		
-		<!-- 我的订单 -->
-		<view class="section-card">
+				<!-- 我的订单 -->
+				<view class="section-card">
 			<view class="section-header">
 				<text class="section-title">我的订单</text>
 				<view class="section-more" @click="$navigateTo('/pages/order/order')">
@@ -67,6 +67,12 @@
 					</view>
 					<text class="icon-text">待发货</text>
 				</view>
+				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?status=已发货')">
+					<view class="tool-icon store-icon">
+						<image src="/static/img/icons/completed.png" class="tool-icon-image"></image>
+					</view>
+					<text class="icon-text">已发货</text>
+				</view>
 				<view class="order-icon-item" @click="$navigateTo('/pages/order/order?status=已完成')">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/completed.png" class="tool-icon-image"></image>
@@ -81,8 +87,6 @@
 				</view>
 			</view>
 		</view>
-		
-		<!-- 我的工具 -->
 		<view class="section-card">
 			<view class="section-header">
 				<text class="section-title">我的工具</text>

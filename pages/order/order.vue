@@ -11,7 +11,7 @@
 			<view class="i-top b-b">
 				<text class="time">{{ $getDateStr(item.order_info.create_time) }}</text>
 				<text class="state" style="color:#aaaaff">{{ item.order_info.status }}</text>
-				<text v-if="item.order_info.status === '待付款'" class="del-btn iconfont iconicon_delete_fill" 
+				<text v-if="item.order_info.status === '待付款'" class="del-btn iconfont iconicon_delete_fill"
 					style="color: #aaaaff;" @click="cancelOrder(item)"></text>
 			</view>
 
@@ -23,8 +23,8 @@
 			</scroll-view>
 
 			<!-- 单个商品时的展示 -->
-			<view v-if="item.order_details.length == 1" class="goods-box-single" 
-				v-for="(goodsItem, idx) in item.order_details" :key="idx" 
+			<view v-if="item.order_details.length == 1" class="goods-box-single"
+				v-for="(goodsItem, idx) in item.order_details" :key="idx"
 				@click="$navigateTo('goods/detail?id=' + goodsItem.product_id)">
 				<image class="goods-img" :src="goodsItem.product_img" mode="aspectFill"></image>
 				<view class="right">
@@ -53,7 +53,7 @@
 				<button class="action-btn" @click="$toast('已经向商家推送消息啦')">催发货</button>
 			</view>
 
-			<view class="action-box b-t" v-if="item.order_info.delivery_status === '待收货'">
+			<view class="action-box b-t" v-if="item.order_info.status === '已发货'">
 				<button class="action-btn" @click="showLogistics(item)">查看物流</button>
 				<button class="action-btn" @click="comfirm(item)">确认收货</button>
 			</view>
@@ -63,9 +63,9 @@
 				<button class="action-btn" @click="to_return(item)">申请售后</button>
 			</view>
 
-			<view class="action-box b-t" v-if="item.order_info.status === '已发货'">
+			<!-- <view class="action-box b-t" v-if="item.order_info.status === '已发货'">
 				<button class="action-btn" @click="showLogistics(item)">查看物流</button>
-			</view>
+			</view> -->
 		</view>
 
 		<swiper :current="tabCurrentIndex" class="swiper-box" duration="300" @change="changeTab">
@@ -135,12 +135,13 @@ export default {
 		if (options.status) {
 			// 根据status找到对应的索引
 			const index = this.navList.findIndex(item => item.state === options.status);
+			console.log("index", index);
 			if (index !== -1) {
 				this.tabClick(index);
 				return;
 			}
 		}
-		
+
 		// 处理原有的stat参数逻辑
 		let _stat = parseInt(options.stat);
 		if (this.$isNull(_stat)) {
@@ -168,9 +169,15 @@ export default {
 			});
 		},
 		comfirm(e) {
-			this.$put(`/mini_core/shop-order/${e.id}/confirm`, {}, res => {
-				this.$toast("确认收货成功");
-				this.reload_list();
+			// console.log("e",e)
+			this.$comfirm("您确定要确认收货吗?", cf => {
+				this.$post("/wx_mini_app/shop-order/status", {
+					"status": "已完成",
+					"order_no": e.order_info.order_no
+				}, res => {
+					this.$toast("确认收货成功");
+					this.reload_list();
+				});
 			});
 		},
 		topay(item) {
@@ -200,8 +207,9 @@ export default {
 				this.$toast("该订单的商品已经自提");
 				return;
 			}
-			let uri = "/pages/order/logister?order=" + item.order_info.express_no + 
-				"&type=" + item.order_info.delivery_platform;
+			let uri = "/pages/order/logister?order=" + item.order_info.order_no +
+				"&logistics_company=" + item.order_info.express_company +
+				"&logistics_no=" + item.order_info.express_no;
 			this.$navigateTo(uri);
 		},
 
@@ -233,9 +241,7 @@ export default {
 		},
 
 		to_return(e) {
-
 			this.$navigateTo("/pages/order/return?order_id=" + e.id);
-
 		},
 
 		getAmount(e) {
@@ -269,7 +275,7 @@ export default {
 				// 如果直接是状态值，就直接使用
 				this.cond.status = this.tabCurrentIndex;
 			}
-			
+
 			// 如果是全部订单，则置空状态
 			if (this.cond.status === "") {
 				this.cond.status = "";
