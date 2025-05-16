@@ -7,7 +7,7 @@
 			</view>
 		</view>
 		<!-- 订单列表 -->
-		<view v-for="(item, index) in orderList" :key="index" class="order-item">
+		<view v-for="(item, index) in orderList" :key="index" class="order-item" @click="gotoDetail(item)">
 			<view class="i-top b-b">
 				<text class="time">{{ $getDateStr(item.order_info.create_time) }}</text>
 				<text class="state" style="color:#aaaaff">{{ item.order_info.status }}</text>
@@ -49,18 +49,21 @@
 			</view>
 
 			<view class="action-box b-t" v-if="item.order_info.status === '待发货'">
-				<button class="action-btn" @click="tuikuan(item)">退款</button>
-				<button class="action-btn" @click="$toast('已经向商家推送消息啦')">催发货</button>
+				<button class="action-btn" @click.stop="gotoDetail(item)">订单详情</button>
+				<button class="action-btn" @click.stop="tuikuan(item)">退款</button>
+				<button class="action-btn" @click.stop="$toast('已经向商家推送消息啦')">催发货</button>
 			</view>
 
 			<view class="action-box b-t" v-if="item.order_info.status === '已发货'">
-				<button class="action-btn" @click="showLogistics(item)">查看物流</button>
-				<button class="action-btn" @click="comfirm(item)">确认收货</button>
+				<button class="action-btn" @click.stop="gotoDetail(item)">订单详情</button>
+				<button class="action-btn" @click.stop="showLogistics(item)">查看物流</button>
+				<button class="action-btn" @click.stop="comfirm(item)">确认收货</button>
 			</view>
 
 			<view class="action-box b-t" v-if="item.order_info.status === '已完成'">
-				<button class="action-btn" @click="to_comment(item)">评价</button>
-				<button class="action-btn" @click="to_return(item)">申请售后</button>
+				<button class="action-btn" @click.stop="gotoDetail(item)">订单详情</button>
+				<button class="action-btn" @click.stop="to_comment(item)">评价</button>
+				<button class="action-btn" @click.stop="to_return(item)">申请售后</button>
 			</view>
 
 			<!-- <view class="action-box b-t" v-if="item.order_info.status === '已发货'">
@@ -318,6 +321,10 @@ export default {
 			let order_id = item.order_info.id;
 			let money = item.order_info.actual_amount;
 			this.$redirectTo('/pages/pay/pay?order_id=' + order_id + '&money=' + money);
+		},
+
+		gotoDetail(item) {
+			this.$navigateTo(`/pages/order/detail?id=${item.order_info.order_no}`);
 		},
 
 

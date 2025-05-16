@@ -266,19 +266,7 @@ export default {
 			this.$Copy(cont);
 		},
 
-		initshareobj(e) {
-			this.shareobj.title = "搭健康";
-			this.shareobj.shareSummary = "点击链接下载搭健康商城";
-			this.shareobj.image = this.getConst().host + "images/icon.png";
 
-
-			let uri = this.getConst().host + "wxh5/#/pages/goods/detail?id=" + this.goodsData.id + "&guider=" + this.userInfo.id;
-			uri = "http://djk.51gang.top/appmkt/tjk/androidapk.html";
-
-
-			this.shareobj.href = uri;
-
-		},
 
 		openshare(e) {
 			this.tocopy();
@@ -903,6 +891,8 @@ page {
 .detail-desc {
 	background: #fff;
 	margin-top: 16upx;
+	width: 100%;
+	overflow: hidden;
 
 	.d-header {
 		display: flex;
@@ -928,12 +918,28 @@ page {
 			width: 300upx;
 			height: 0;
 			content: '';
-
 		}
 	}
+}
 
+/* 添加全局样式强制图片适应容器 */
+.detail-desc view[v-html="descriptionNode"] {
+	width: 100%;
+	overflow-x: hidden;
+}
 
+.detail-desc view[v-html="descriptionNode"] img,
+.detail-desc view[v-html="descriptionNode"] image {
+	max-width: 100% !important;
+	width: auto !important;
+	height: auto !important;
+	display: block !important;
+	box-sizing: border-box !important;
+}
 
+.detail-desc * {
+	max-width: 100% !important;
+	box-sizing: border-box !important;
 }
 
 .attr-content {

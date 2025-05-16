@@ -161,8 +161,7 @@
 							"package":res.data.package,
 							"signType":res.data.sign_type,
 							"paySign":res.data.pay_sign,
-							// "appid":res.data.appid,
-							// "prepayid":res.data.prepayid,
+			
 						}
 						console.log("orderInfo",orderInfo)
 						var reqdata={}
@@ -185,8 +184,21 @@
 							}
 						reqdata.fail	=(err) =>{
 							console.log(err)
-								that.$toast("支付失败"+err.errMsg)
-							}
+							// 替换Toast为模态框
+							uni.showModal({
+								title: '支付失败',
+								content: err,
+								showCancel: true,
+								cancelText: '取消',
+								confirmText: '返回订单',
+								success: function (res) {
+									if (res.confirm) {
+										// 用户点击确定，返回订单页面
+										that.$redirectTo('/pages/order/order');
+									}
+								}
+							});
+						}
 						
 						
 						uni.requestPayment(reqdata);
@@ -201,7 +213,7 @@
 					}, (res) =>{
 						console.log("wxunifiedorder_app",res)
 						if(res.code!=200){
-							this.$toast(res.msg)
+							this.$toast(res.error)
 							return 
 						}						
 						var reqdata = {
@@ -228,9 +240,22 @@
 							});
 						}
 						
-						reqdata.fail = (err) =>{
+						reqdata.fail = (err) => {
 							console.log(err)
-							that.$toast("支付失败"+err.errMsg)
+							// 替换Toast为模态框
+							uni.showModal({
+								title: '支付失败',
+								content: err.errMsg || '未知错误',
+								showCancel: true,
+								cancelText: '取消',
+								confirmText: '返回订单',
+								success: function (res) {
+									if (res.confirm) {
+										// 用户点击确定，返回订单页面
+										that.$redirectTo('/pages/order/order');
+									}
+								}
+							});
 						}
 						
 						uni.requestPayment(reqdata);
