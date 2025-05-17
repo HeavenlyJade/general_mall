@@ -132,13 +132,13 @@
 					order.commentStat=2;
 					var _this=this;
 					//order.stat=6;
-					this.$post("order/update",order,function(){
+					// this.$post("/order/update",order,function(){
 						
-						uni.redirectTo({
-							"url":'/pages/order/order?stat=4'
-						})
+					// 	uni.redirectTo({
+					// 		"url":'/pages/order/order?stat=4'
+					// 	})
 						
-					})
+					// })
 					
 					uni.hideLoading();
 				},2000)

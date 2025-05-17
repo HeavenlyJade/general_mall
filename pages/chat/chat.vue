@@ -169,7 +169,7 @@
 			getMsgList(){
 				// 消息列表
 				let list = [
-					{id:1,uid:1,username:"售后客服008",face:this.getConst().defaultAvatar||"/static/img/chat/face_2.jpg",time:"12:57",type:"text",msg:{content:"客服连线中，请发送消息等待回复，或者直接拨打客服电话15673341555"}},
+					{id:1,uid:1,username:"售后客服008",face:this.getConst().defaultAvatar||"/static/img/chat/face_2.jpg",time:"12:57",type:"text",msg:{content:"客服连线中，请发送消息等待回复"}},
 				]
 				let msg_li=[];
 				let local_li=this.$dataLocal("my_msg");

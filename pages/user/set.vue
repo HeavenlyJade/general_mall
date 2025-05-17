@@ -196,7 +196,7 @@ export default {
 			let _this = this;
 			// 修改URL，加上用户ID
 			const userId = this.user.id;
-			const url = `/mini_core/shop_users/${userId}`;
+			const url = `/wx_mini_app/shop_users/${userId}`;
 			
 			this.$put(url, o, function (res) {
 				console.log("res",res)

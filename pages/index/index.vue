@@ -57,14 +57,14 @@ export default {
 	},
 	methods: {
 		loadBannerData() {
-			this.$get('/mini_core/banners/by-type/index_bg', {}, res => {
+			this.$get('/wx_mini_app/banners/by-type/index_bg', {}, res => {
 				if(  res.items) {
 					this.bannerImage = res.items[0].upload_image
 				}
 			})
 		},
 		loadCategoryData() {
-			this.$get('/mini_core/product-category', {
+			this.$get('/wx_mini_app/product-category', {
 				page: 1,
 				size: 10,
 				type: 'index'
@@ -84,7 +84,7 @@ export default {
 				this.$set(this.productList, categoryId, [])
 			}
 			
-			this.$get('/mini_core/shop-product', {
+			this.$get('/wx_mini_app/shop-product', {
 				page: 1,
 				size: 4,
 				need_total_count: true,

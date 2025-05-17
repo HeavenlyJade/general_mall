@@ -199,7 +199,7 @@ export default {
     async getCardMsg() {
       console.log(this.apiUrl)
       await wx.request({
-        url: this.apiUrl+ '/api/v1/mini_core/card',
+        url: this.apiUrl+ '/api/v1/wx_mini_app/card',
         method: 'GET',
         data: {
           openid: this.openid

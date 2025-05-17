@@ -1,8 +1,24 @@
 <template>
 	<view>
-		
-		
-	<form>
+	<form>  
+				<!-- 订单商品列表 -->
+				<view class="product-list">
+			<view class="list-title">请选择需要退货的商品：</view>
+			<checkbox-group @change="checkboxChange">
+				<view class="product-item" v-for="(item, index) in productList" :key="index">
+					<view class="checkbox-wrapper">
+						<checkbox :value="index.toString()" />
+					</view>
+					<image class="product-img" :src="item.product_img" mode="aspectFill"></image>
+					<view class="product-info">
+						<view class="product-name">{{item.product_name}}</view>
+						<view class="product-spec" v-if="item.product_spec">{{item.product_spec}}</view>
+						<view class="product-price">¥{{item.actual_price}} × {{item.num}}</view>
+					</view>
+				</view>
+			</checkbox-group>
+		</view>
+
 			<swiper :current="subjectIndex" class="swiper-box" @change="SwiperChange" :style="{'height':swiperHeight}">
 				<swiper-item v-for="(subject,index) in subjectList" :key="index">
 					
@@ -26,19 +42,10 @@
 				</swiper-item>
 			</swiper>
 		</form>
-
-       <view class="notice">
-			<view>用户须知:</view>
-			<view><text style="font-size: 15px;">可以联系售后微信:{{wx}}</text></view>
-			<view><text style="font-size: 15px;">可以拨打售后电话:{{tel}}</text></view>
-			
-		</view>
-
+		
         <view class="commit_bt">
         	<button type="primary" @click="withdraw()">申请退货</button>
         </view>
-
-
 	</view>
 </template>
 
@@ -64,9 +71,12 @@
 					
 				   ],			
 				reason:"",
-				order_id:"",
+				order_no:"",
 				wx:"",
-				tel:""
+				tel:"",
+				order_data:{},
+				productList: [],        // 订单商品列表
+				selectedProducts: []    // 已选择的商品
 			}
 		},
 		onReady() {
@@ -75,17 +85,8 @@
 			var _me = this;
 			uni.getSystemInfo({
 				//获取手机屏幕高度信息，让swiper的高度和手机屏幕一样高                
-				success: function(res) {
-					// console.log(res.model);                    
-					// console.log(res.pixelRatio);                    
-					// console.log(res.windowWidth);                    
-					// console.log(res.windowHeight);
-					// //这里是手机屏幕高度                    
-					// console.log(res.language);                    
-					// console.log(res.version);                    
-					// console.log(res.platform);                    
+				success: function(res) {                 
 					tempHeight = res.windowHeight;
-					console.log("屏幕可用高度 " + tempHeight);
 
 					uni.createSelectorQuery().select("#top-box").fields({
 						size: true,
@@ -94,7 +95,6 @@
 						let h=0;
 						if(!!data&&!!data.height){h=data.height}
 						tempHeight -=h;
-						console.log("减掉顶部后的高度 " + tempHeight);
 
 						uni.createSelectorQuery().select("#foot-box").fields({
 							size: true,
@@ -103,9 +103,7 @@
 							let h=0;
 							if(!!data&&!!data.height){h=data.height}
 							tempHeight -=h;
-							console.log("减掉底部后的高度 " + tempHeight);
 							_me.swiperHeight = tempHeight + 'px';
-							console.log("滑屏最后高度 " + _me.swiperHeight);
 						}).exec();
 
 					}).exec();
@@ -114,45 +112,80 @@
 
 		},
 		onLoad(option) {
-			this.order_id=option.order_id;
+			this.order_no = option.order_no;
+			this.order_data = uni.getStorageSync('temp_order_data');
+			uni.removeStorageSync('temp_order_data');
+			console.log("this.order_data", this.order_data);
+			// 初始化商品列表
+			if (this.order_data && this.order_data.order_details) {
+				this.productList = this.order_data.order_details;
+			}
 			
-			this.currentType = this.subjectList[0].type;
 			uni.setNavigationBarTitle({
 				title: this.title
 			});			
 			
-			//添加用户显示答案字段
-			for (var i = 0; i < this.subjectList.length; i++) {		
-				this.$set(this.subjectList[i],"showAnswer",false);				
-			}
 			this.load_sale_after();
 			
 		},
 		methods: {
 			load_sale_after(){
 				var _this=this;
-				this.$post("config/find",{"name":"cfg_after_sale"},function(res){					
-					var o=JSON.parse(res.data.value);
-					_this.wx=o.wx;
-					_this.tel=o.tel;
+				var args ={"page":1,"size":20,  "is_enabled": 1}
+				this.$post("/wx_mini_app/shop-return-reason/",args,function(res){		
+					console.log(res);
+					var data =  res.data;
+					_this.wx=data.wx;
+					_this.tel=data.tel;
+					
+					if(data && data.length > 0) {
+						var options = [];
+						data.forEach(item => {
+							options.push({"id": item.id.toString(), "content": item.reason_type});
+						});
+						_this.subjectList[0].optionList = options;
+					}
 				})
 				
 			},
 			withdraw(){
-				var o={};
-				o.id=this.order_id;
+				if (this.selectedProducts.length === 0) {
+					uni.showToast({ title: '请选择商品', icon: 'none' });
+					return;
+				}
 				
-				var refundp_detail={};
-				refundp_detail.reason=this.reason
-				o.refundpDetail=JSON.stringify(refundp_detail);
-				o.stat=5;
-				o.refundpStat=1;
-				this.$post("order/update",o,function(res){
-					uni.showToast({ title: '申请成功' });
-					uni.redirectTo({
-						"url":"/pages/order/order-refund?state=5"
-					})
-				})
+				if (!this.reason) {
+					uni.showToast({ title: '请选择退货理由', icon: 'none' });
+					return;
+				}
+				
+				// 收集已选商品的关键信息
+				var selectedItems = [];
+				for(let i = 0; i < this.selectedProducts.length; i++) {
+					let item = this.selectedProducts[i];
+					selectedItems.push({
+						id: item.id,
+						order_no: item.order_no,
+						order_item_id: item.order_item_id
+					});
+				}
+				
+				
+				var o = {};
+				o.order_no = this.order_no;
+				
+				var refundp_detail = {};
+				refundp_detail.reason = this.reason;
+				refundp_detail.products = selectedItems; // 使用提取的关键信息
+				o.refundpDetail =refundp_detail;
+				console.log("退货商品信息:", o);
+
+				// this.$post("/wx_mini_app/shop-order/status", o, function(res) {
+				// 	uni.showToast({ title: '申请成功' });
+				// 	uni.redirectTo({
+				// 		"url":"/pages/order/order-refund?state='退款中,已退款'"
+				// 	})
+				// })
 			},
 			SwiperChange: function(e) { //滑动事件
 			
@@ -164,7 +197,18 @@
 				}
 								
 			},
-			
+			checkboxChange(e) {
+				// 获取选中的商品
+				this.selectedProducts = [];
+				const values = e.detail.value;
+				for (let i = 0; i < values.length; i++) {
+					const index = parseInt(values[i]);
+					if (index >= 0 && index < this.productList.length) {
+						this.selectedProducts.push(this.productList[index]);
+					}
+				}
+				console.log("已选择的商品", this.selectedProducts);
+			},
 			RadioboxChange : function(e) { //单选选中
 				
 				var items = this.subjectList[this.subjectIndex].optionList;
@@ -241,6 +285,59 @@
 	
 	.animation-reverse {
 	    animation-direction: reverse
+	}
+	.product-list {
+		padding: 10rpx 30rpx;
+		margin-bottom: 120rpx;
+	}
+	
+	.list-title {
+		font-size: 32rpx;
+		font-weight: bold;
+		padding: 20rpx 0;
+		border-bottom: 1px solid #eee;
+	}
+	
+	.product-item {
+		display: flex;
+		padding: 20rpx 0;
+		border-bottom: 1px solid #f5f5f5;
+	}
+	
+	.checkbox-wrapper {
+		display: flex;
+		align-items: center;
+		margin-right: 20rpx;
+	}
+	
+	.product-img {
+		width: 160rpx;
+		height: 160rpx;
+		border-radius: 8rpx;
+		margin-right: 20rpx;
+	}
+	
+	.product-info {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+	}
+	
+	.product-name {
+		font-size: 28rpx;
+		line-height: 1.4;
+	}
+	
+	.product-spec {
+		font-size: 24rpx;
+		color: #999;
+		margin: 10rpx 0;
+	}
+	
+	.product-price {
+		font-size: 28rpx;
+		color: #fa436a;
 	}
 	
 	@keyframes fade {

@@ -164,27 +164,7 @@ export default {
     fetchWithdrawalRecords() {
       // 这里应该是调用API获取数据
       console.log(`Fetching records for ${this.currentMonth}`);
-      
-      // 实际项目中，这里应该是向后端发送请求
-      // wx.request({
-      //   url: this.apiUrl + '/api/v1/mini_core/withdrawal_records',
-      //   method: 'GET',
-      //   data: {
-      //     month: this.currentMonth
-      //   },
-      //   success: (response) => {
-      //     if (response.data && response.data.code === 0) {
-      //       this.records = response.data.data;
-      //     }
-      //   },
-      //   fail: (error) => {
-      //     console.error('Failed to fetch records:', error);
-      //     wx.showToast({
-      //       title: '获取数据失败',
-      //       icon: 'none'
-      //     });
-      //   }
-      // });
+
     }
   },
   onLoad() {

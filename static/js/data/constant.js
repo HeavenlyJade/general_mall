@@ -11,7 +11,7 @@ var CONFIG={
 }
 CONFIG.API=CONFIG.host; //config+"api"
 
-CONFIG.uploadUrl=CONFIG.upload_url+"/mini_core/upload_image";
+CONFIG.uploadUrl=CONFIG.upload_url+"/wx_mini_app/upload_image";
 //CONFIG.verifyUrl=CONFIG.API+"open/verify";
 
 CONFIG.defaultAvatar="http://ydytxx.oss-cn-beijing.aliyuncs.com/avatar.jpg";

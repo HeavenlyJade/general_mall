@@ -73,11 +73,11 @@
       </view>
       <view class="info-item" v-if="order.order_info.create_time">
         <text class="label">创建时间:</text>
-        <text class="value">{{ $getDateStr(order.order_info.create_time) }}</text>
+        <text class="value">{{ order.order_info.create_time }}</text>
       </view>
       <view class="info-item" v-if="order.order_info.payment_time">
         <text class="label">支付时间:</text>
-        <text class="value">{{ $getDateStr(order.order_info.payment_time) }}</text>
+        <text class="value">{{ order.order_info.payment_time }}</text>
       </view>
       <view class="info-item" v-if="order.order_info.ship_time">
         <text class="label">发货时间:</text>
@@ -252,7 +252,7 @@ export default {
     },
     cancelOrder(e) {
       this.$comfirm("订单还没有支付,确定要删除吗?", cf => {
-        this.$put(`/mini_core/shop-order/${e.id}/cancel`, {}, res => {
+        this.$put(`/wx_mini_app/shop-order/${e.id}/cancel`, {}, res => {
           this.$toast("取消成功");
           uni.navigateBack();
         });
@@ -297,7 +297,7 @@ export default {
             o.id = item.id;
             o.refundStat = 1;  //申请中
             o.stat = 5;
-            _this.$post("order/update", o, function (res) {
+            _this.$post("/order/update", o, function (res) {
               uni.showToast({ title: '申请成功' });
               setTimeout(function () {
                 uni.navigateTo({

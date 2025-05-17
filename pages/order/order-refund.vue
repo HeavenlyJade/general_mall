@@ -15,56 +15,52 @@
 						v-for="(item,index) in orderList" :key="index"
 						class="order-item"
 					>
-						<view class="i-top b-b">
-							<text class="time">{{item.createAt}}</text>
-							<text class="state" :style="{color: item.stateTipColor}">{{item.stateTip}}</text>
-							<text 
-								v-if="9===9" 
-								class="del-btn yticon icon-iconfontshanchu1"
-								@click="deleteOrder(item)"
-							></text>
+						<!-- 订单时间和状态 -->
+						<view class="order-header">
+							<text class="order-time">{{item.transaction_time || '暂无交易时间'}}</text>
+							<text class="status-tag" :style="{color: getStatusColor(item)}">{{getStatusText(item)}}</text>
 						</view>
 						
-						<scroll-view v-if="item.goods.length > 1"  class="goods-box" scroll-x>
-							<view class="goods-item" v-for="(goodsItem, goodsIndex) in item.goods" :key="goodsIndex">
-								<image class="goods-img" :src="goodsItem.image" mode="aspectFill"></image>
+						<!-- 商品列表循环 -->
+						<view 
+							v-for="(detail, detailIndex) in item.orderItems" 
+							:key="detailIndex"
+							class="goods-item-row"
+						>
+							<view class="goods-content">
+								<!-- 商品图片 -->
+								<image class="goods-image" :src="detail.image_url" mode="aspectFill"></image>
+								
+								<!-- 商品信息重新布局 -->
+								<view class="goods-info">
+									<!-- 将商品名称放在最右侧 -->
+									<view class="goods-title-container">
+										<text class="goods-title">{{detail.product_name}}</text>
+									</view>
+									
+									<!-- 规格信息 -->
+									<text class="goods-attr" v-if="detail.sku_properties_name">{{detail.sku_properties_name}}</text>
+									
+									<!-- 价格信息 -->
+									<!-- <text class="goods-price">¥ {{detail.price || 0}}X{{detail.quantity || 1}}</text> -->
+								</view>
 							</view>
-						</scroll-view>
-						<view v-if="item.goods.length == 1" 
-							class="goods-box-single">
-							<image class="goods-img" :src="item.goods[0].image" mode="aspectFill"></image>
-							<view class="right">
-								<text class="title clamp">{{item.goods[0].name}}</text>
-								<text class="attr-box">{{item.goods[0].sku}}</text>
-								<text class="price">{{item.goods[0].price}}X{{item.goods[0].buyNum}}</text>
-							</view>
 						</view>
 						
-						<view class="price-box">
-							共
-							<text class="num">{{getCount(item)}}</text>
-							件商品 实付款
-							<text class="price">{{getAmount(item)}}</text>
+						<!-- 退款金额信息 -->
+						<view class="order-footer">
+							<text class="total-info">共 {{item.product_count || 0}} 件商品 实付款</text>
+							<text class="total-price">¥ {{item.actual_amount || 0}}</text>
 						</view>
 						
-						<view class="action-box b-t" >
-							<block v-if="item.refundStat==1">
-							 <button class="action-btn recom">退款中···</button>
-							</block>
-							<block v-if="item.refundStat==2">
-							 <button class="action-btn recom">退款成功</button>
-							</block>
-								<block v-if="item.refundpStat==1">
-								 <button class="action-btn recom">退货中···</button>
-								</block>
-								<block v-if="item.refundpStat==2">
-								 <button class="action-btn recom">退货成功</button>
-								</block>
-						</view>
-
-						
+			
+						<!-- <view class="refund-button-area">
+							<button class="refund-btn" :class="{'success': item.status === '已退款'}">
+								{{item.status === '已退款' ? '退款成功' : '退款中···'}}
+							</button>
+						</view> -->
 					</view>
-					 
+					
 					<uni-load-more :status="tabItem.loadingType"></uni-load-more>
 					
 				</scroll-view>
@@ -177,22 +173,8 @@
 		
 		onLoad(options){
 			this.loadUserInfo();
-			/**
-			 * 修复app端点击除全部订单外的按钮进入时不加载数据的问题
-			 * 替换onLoad下代码即可
-			 */
-			this.tabCurrentIndex = +options.state;
-			this.cond.stat=options.state;
-			// #ifndef MP
-			//this.loadData()
-			// #endif
-			// #ifdef MP
-			if(options.state == 0){
-			//	this.loadData()
-			}
-			// #endif
-			
-			//this.reloadList();
+			this.tabCurrentIndex = +options.status;
+			this.cond.stat=options.status;
 			
 		},
 		
@@ -207,27 +189,66 @@
 		},
 		 
 		methods: {
+			// 获取状态文字
+			getStatusText(item) {
+				if (item.status === '退款中') {
+					return '退款中';
+				} else if (item.refund_status && item.refund_status !== '无退款') {
+					return item.refund_status;
+				}
+				return '处理中';
+			},
+			
+			// 获取状态颜色
+			getStatusColor(item) {
+				if (item.status === '退款中') {
+					return '#fa436a'; // 红色
+				} else if (item.refund_status === '已退款') {
+					return '#4CAF50'; // 绿色
+				}
+				return '#fa436a'; // 默认红色
+			},
+			
 			getAmount(e){
-				let o=this.getGlistData(e);
-				return o.amount;
+				if (e.actual_amount) {
+					return e.actual_amount;
+				}
+				return 0;
 			},
 			getCount(e){
-				let o=this.getGlistData(e);
-				return o.count;
+				if (e.product_count) {
+					return e.product_count;
+				}
+				return 0;
 			},
 			
 			getGlistData(e){
-				let sum=0,n=0;			
-				let li=e.goods;
-				for(let i in li){
-					let ite=li[i];				
-					let m=parseFloat(ite.buyNum)*parseFloat(ite.price);
-					sum+=m;
-					n=n+parseFloat(ite.buyNum);				
+				if (e.actual_amount && e.product_count) {
+					return {
+						"amount": e.actual_amount,
+						"count": e.product_count
+					};
 				}
+				
+				let sum=0,n=0;
+				// 兼容处理
+				if (e.orderItems && e.orderItems.length > 0) {
+					for(let i in e.orderItems){
+						let ite = e.orderItems[i];				
+						let m = parseFloat(ite.quantity || 0) * parseFloat(ite.price || 0);
+						sum += m;
+						n = n + parseFloat(ite.quantity || 0);				
+					}
+				} else if (e.goods && e.goods.length > 0) {
+					for(let i in e.goods){
+						let ite = e.goods[i];				
+						let m = parseFloat(ite.buyNum || 0) * parseFloat(ite.price || 0);
+						sum += m;
+						n = n + parseFloat(ite.buyNum || 0);				
+					}
+				}
+				
 				return {"amount":sum,"count":n};
-				
-				
 			},
 			
 			reject_product(item){
@@ -245,7 +266,7 @@
 								o.id=item.id;
 								o.refundStat=1;  //申请中
 								var _this=this;
-								this.$post("order/update",o,function(res){
+								this.$post("/order/update",o,function(res){
 									item.refundStat=1;
 										uni.showToast({ title: '申请成功' });
 								})
@@ -286,21 +307,20 @@
 	    	return;
 	    }
 	    this.logi_no=pdata.postid;
-		this.logi_corp=pdata.type;
-		var logisterMap=this.logisterMap;
-	    var logister_title="运单号码："+pdata.postid+",物流公司："+logisterMap[pdata.type];
-	    console.log(logister_title);
-		var _this =this;
-		this.$post("order/getlogimsg", pdata,function(r) {
-			if (r.status == 200) {
-				var obj=JSON.parse(r.msg)
-				var list=obj.data;
-				console.log(list)
-                _this.logistics=list;
-				_this.layer=true;
-			}
-			
-		})
+	this.logi_corp=pdata.type;
+	var logisterMap=this.logisterMap;
+    var logister_title="运单号码："+pdata.postid+",物流公司："+logisterMap[pdata.type];
+    console.log(logister_title);
+var _this =this;
+this.$post("order/getlogimsg", pdata,function(r) {
+	if (r.status == 200) {
+		var obj=JSON.parse(r.msg)
+		var list=obj.data;
+		console.log(list)
+        _this.logistics=list;
+		_this.layer=true;
+	}
+})
 				
 			},
 			loadUserInfo(){
@@ -317,66 +337,55 @@
 				let o={};
 				o.pagefrom=this.cond.pagefrom;
 				o.pagesize=this.cond.pagesize;
-                o.stat=5;
+				o.status="退款中,已退款";
 				o.userId=this.userInfo.id;
 				let _this=this;
-				this.$post("order/query",o,function(res){
-					var li=res.rows;
-					for(let i in li){
-						let item= li[i];
-						item.goods=JSON.parse(item.goodsDetail);
-					//	item.sku=JSON.parse(item.skuDetail);
+				this.$post("/wx_mini_app/shop-order/order_status_data",o,function(res){
+					if (res.code === 200 && res.data) {
+						let orderData = Array.isArray(res.data) ? res.data : [res.data];
+						
+						// 处理新的数据结构
+						let processedOrders = [];
+						for(let i in orderData){
+							let item = orderData[i];
+							
+							// 将订单信息作为主要数据
+							let orderInfo = item.order_info || {};
+							
+							// 将order_details直接作为orderItems
+							orderInfo.orderItems = item.order_details || [];
+							
+							// 确保每个订单项都有正确的图片URL
+							if(orderInfo.orderItems && orderInfo.orderItems.length > 0) {
+								orderInfo.orderItems.forEach(detail => {
+									// 设置图片路径
+									detail.image_url = detail.product_img;
+								});
+							}
+							
+							processedOrders.push(orderInfo);
+						}
+						
+						var old_li = _this.orderList;
+						var new_li = old_li.concat(processedOrders);
+						_this.orderList = new_li;
+						
+						if(processedOrders.length > 0){
+							_this.cond.pagefrom = _this.cond.pagefrom + 1;
+						}
+					} else {
+						console.error("获取订单数据失败", res);
+						uni.showToast({
+							title: '获取订单数据失败',
+							icon: 'none'
+						});
 					}
-					var old_li=_this.orderList;
-					var new_li=old_li.concat(li);
-					_this.orderList=new_li;
-					console.log(new_li)
-					if(li.length>0){
-						_this.cond.pagefrom=_this.cond.pagefrom+1;
-					}
-					
 				})
-				
 			},
 			
 			//获取订单列表
 			loadData(source){
-				//这里是将订单挂载到tab列表下
-				let index = this.tabCurrentIndex||0;
-				let navItem = this.navList[index];
-				let state = navItem.state;
-				
-				if(source === 'tabChange' && navItem.loaded === true){
-					//tab切换只有第一次需要加载数据
-					return;
-				}
-				if(navItem.loadingType === 'loading'){
-					//防止重复加载
-					return;
-				}
-				
-				navItem.loadingType = 'loading';
-				
-				setTimeout(()=>{
-					let orderList = Json.orderList.filter(item=>{
-						//添加不同状态下订单的表现形式
-						item = Object.assign(item, this.orderStateExp(item.state));
-						//演示数据所以自己进行状态筛选
-						if(state === 0){
-							//0为全部订单
-							return item;
-						}
-						return item.state === state
-					});
-					orderList.forEach(item=>{
-						navItem.orderList.push(item);
-					})
-					//loaded新字段用于表示数据加载完毕，如果为空可以显示空白页
-					this.$set(navItem, 'loaded', true);
-					
-					//判断是否还有数据， 有改为 more， 没有改为noMore 
-					navItem.loadingType = 'more';
-				}, 600);	
+				this.loadList();
 			}, 
 
 			//swiper 切换
@@ -387,11 +396,7 @@
 			//顶部tab点击
 			tabClick(item,index){
 				console.log(item);
-				/* let s="";
-				if(item.state!=0){s=item.state;}
-				this.cond.stat=s;
-				this.reloadList(); */
-	               //查询的工作 在watch里面监听tabindex的时候做了，此处注释掉查询的代码
+
 				this.tabCurrentIndex = index;
 			},
 			
@@ -400,7 +405,7 @@
 				o.id=id;
 				o.stat=stat;
 				var _this=this;
-				this.$post("order/update",o,function(res){
+				this.$post("/order/update",o,function(res){
 						uni.showToast({ title: '操作成功' });
 				})
 			},
@@ -415,11 +420,10 @@
 			},
 			pay(item){
 				let order_id=item.id;
-				let money=item.amount-item.benefit+item.postage;
+				let money=item.actual_amount || 0;
 				uni.redirectTo({
 					url: '/pages/money/pay?order_id='+order_id+'&money='+money
 				})
-				//this.pay_success(item);
 			},
 			
 			//删除订单
@@ -597,151 +601,124 @@
 	.uni-swiper-item{
 		height: auto;
 	}
-	.order-item{
+	.order-item {
+		background: #fff;
+		margin: 20rpx;
+		border-radius: 8rpx;
+		overflow: hidden;
+	}
+
+	.order-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 20rpx 30rpx;
+		border-bottom: 1px solid #f5f5f5;
+	}
+
+	.order-time {
+		font-size: 28rpx;
+		color: #333;
+	}
+
+	.status-tag {
+		font-size: 28rpx;
+		color: #fa436a;
+	}
+
+	.goods-item-row {
+		padding: 20rpx 30rpx;
+	}
+
+	.goods-content {
+		display: flex;
+		padding: 16rpx 0;
+		align-items: flex-start;
+	}
+
+	.goods-image {
+		width: 160rpx;
+		height: 160rpx;
+		margin-right: 24rpx;
+		flex-shrink: 0;
+	}
+
+	.goods-info {
+		flex: 1;
 		display: flex;
 		flex-direction: column;
-		padding-left: 30upx;
-		background: #fff;
-		margin-top: 16upx;
-		.i-top{
-			display: flex;
-			align-items: center;
-			height: 80upx;
-			padding-right:30upx;
-			font-size: 28upx;
-			color: #303133;
-			position: relative;
-			.time{
-				flex: 1;
-			}
-			.state{
-				color: #fa436a;
-			}
-			.del-btn{
-				padding: 10upx 0 10upx 36upx;
-				font-size: 32upx;
-				color: #909399;
-				position: relative;
-				&:after{
-					content: '';
-					width: 0;
-					height: 30upx;
-					border-left: 1px solid #DCDFE6;
-					position: absolute;
-					left: 20upx;
-					top: 50%;
-					transform: translateY(-50%);
-				}
-			}
-		}
-		/* 多条商品 */
-		.goods-box{
-			height: 160upx;
-			padding: 20upx 0;
-			white-space: nowrap;
-			.goods-item{
-				width: 120upx;
-				height: 120upx;
-				display: inline-block;
-				margin-right: 24upx;
-			}
-			.goods-img{
-				display: block;
-				width: 100%;
-				height: 100%;
-			}
-		}
-		/* 单条商品 */
-		.goods-box-single{
-			display: flex;
-			padding: 20upx 0;
-			.goods-img{
-				display: block;
-				width: 120upx;
-				height: 120upx;
-			}
-			.right{
-				flex: 1;
-				display: flex;
-				flex-direction: column;
-				padding: 0 30upx 0 24upx;
-				overflow: hidden;
-				.title{
-					font-size: 28upx + 2upx;
-					color: #303133;
-					line-height: 1;
-				}
-				.attr-box{
-					font-size: 24upx + 2upx;
-					color: #909399;
-					padding: 10upx 12upx;
-				}
-				.price{
-					font-size: 28upx + 2upx;
-					color: #303133;
-					&:before{
-						content: '￥';
-						font-size: 24upx;
-						margin: 0 2upx 0 8upx;
-					}
-				}
-			}
-		}
-		
-		.price-box{
-			display: flex;
-			justify-content: flex-end;
-			align-items: baseline;
-			padding: 20upx 30upx;
-			font-size: 24upx + 2upx;
-			color: #909399;
-			.num{
-				margin: 0 8upx;
-				color: #303133;
-			}
-			.price{
-				font-size: 32upx;
-				color: #303133;
-				&:before{
-					content: '￥';
-					font-size: 24upx;
-					margin: 0 2upx 0 8upx;
-				}
-			}
-		}
-		.action-box{
-			display: flex;
-			justify-content: flex-end;
-			align-items: center;
-			height: 100upx;
-			position: relative;
-			padding-right: 30upx;
-		}
-		.action-btn{
-			width: 160upx;
-			height: 60upx;
-			margin: 0;
-			margin-left: 24upx;
-			padding: 0;
-			text-align: center;
-			line-height: 60upx;
-			font-size: 24upx + 2upx;
-			color: #303133;
-			background: #fff;
-			border-radius: 100px;
-			&:after{
-				border-radius: 100px;
-			}
-			&.recom{
-				background: #fff9f9;
-				color: #fa436a;
-				&:after{
-					border-color: #f7bcc8;
-				}
-			}
-		}
 	}
-	
+
+	.goods-title-container {
+		width: 100%;
+		text-align: right;
+		margin-bottom: 10rpx;
+	}
+
+	.goods-title {
+		font-size: 28rpx;
+		color: #333;
+		font-weight: 500;
+		display: inline-block;
+		text-align: right;
+	}
+
+	.goods-attr {
+		font-size: 24rpx;
+		color: #909399;
+		margin-bottom: 8rpx;
+		align-self: flex-end;
+	}
+
+	.goods-price {
+		font-size: 26rpx;
+		color: #333;
+		align-self: flex-end;
+	}
+
+	.order-footer {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		padding: 20rpx 30rpx;
+		border-top: 1px solid #f5f5f5;
+	}
+
+	.total-info {
+		font-size: 26rpx;
+		color: #909399;
+		margin-right: 10rpx;
+	}
+
+	.total-price {
+		font-size: 32rpx;
+		color: #333;
+	}
+
+	.refund-button-area {
+		display: flex;
+		justify-content: flex-end;
+		padding: 20rpx 30rpx;
+		border-top: 1px solid #f5f5f5;
+	}
+
+	.refund-btn {
+		width: 160rpx;
+		height: 60rpx;
+		line-height: 60rpx;
+		text-align: center;
+		font-size: 26rpx;
+		color: #fa436a;
+		background: #fff9f9;
+		border-radius: 30rpx;
+		border: 1px solid #f7bcc8;
+	}
+
+	.refund-btn.success {
+		color: #4CAF50;
+		background: #f0fff0;
+		border: 1px solid #b7e4b7;
+	}
 	
 	/* load-more */
 	.uni-load-more {

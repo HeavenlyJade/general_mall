@@ -10,65 +10,61 @@
 		<view v-for="(item, index) in orderList" :key="index" class="order-item" @click="gotoDetail(item)">
 			<view class="i-top b-b">
 				<text class="time">{{ $getDateStr(item.order_info.create_time) }}</text>
-				<text class="state" style="color:#aaaaff">{{ item.order_info.status }}</text>
+				<text class="state" style="color:#fa436a">{{ item.order_info.status }}</text>
 				<text v-if="item.order_info.status === '待付款'" class="del-btn iconfont iconicon_delete_fill"
 					style="color: #aaaaff;" @click="cancelOrder(item)"></text>
 			</view>
 
-			<!-- 多个商品时的展示 -->
-			<scroll-view v-if="item.order_details.length > 1" class="goods-box" scroll-x>
-				<view v-for="(goodsItem, goodsIndex) in item.order_details" :key="goodsIndex" class="goods-item">
+			<!-- 每个商品单独一行展示 -->
+			<view v-for="(goodsItem, goodsIndex) in item.order_details" :key="goodsIndex" 
+				class="goods-item-row"
+				@click.stop="$navigateTo('goods/detail?id=' + goodsItem.product_id)">
+				<view class="goods-content">
 					<image class="goods-img" :src="goodsItem.product_img" mode="aspectFill"></image>
-				</view>
-			</scroll-view>
-
-			<!-- 单个商品时的展示 -->
-			<view v-if="item.order_details.length == 1" class="goods-box-single"
-				v-for="(goodsItem, idx) in item.order_details" :key="idx"
-				@click="$navigateTo('goods/detail?id=' + goodsItem.product_id)">
-				<image class="goods-img" :src="goodsItem.product_img" mode="aspectFill"></image>
-				<view class="right">
-					<text class="title clamp">{{ goodsItem.product_name }}</text>
-					<text class="attr-box">{{ goodsItem.product_spec }}</text>
-					<text class="price">{{ goodsItem.actual_price }}</text>
+					<view class="goods-info">
+						<text class="goods-title">{{ goodsItem.product_name }}</text>
+						<text class="goods-spec">{{ goodsItem.product_spec || '' }}</text>
+						<view class="goods-price-box">
+							<text class="goods-price">¥{{ goodsItem.actual_price }}</text>
+							<text class="goods-count">×{{ goodsItem.num || 1 }}</text>
+						</view>
+					</view>
 				</view>
 			</view>
 
-			<view class="price-box">
-				共
-				<text class="num">{{ item.order_info.product_count }}</text>
-				件商品 实付款
-				<text class="price">{{ item.order_info.actual_amount }}</text>
-			</view>
+			<!-- 订单底部信息和总金额 -->
+			<view class="order-footer">
+				<view class="price-box">
+					共<text class="num">{{ item.order_info.product_count }}</text>件商品
+					<text class="total-label">实付款</text>
+					<text class="price">{{ item.order_info.actual_amount }}</text>
+				</view>
+				
+				<!-- 根据订单状态显示不同的按钮 -->
+				<view class="action-box b-t" v-if="item.order_info.status === '待支付' || item.order_info.status === '待付款'">
+					<button class="action-btn" @click.stop="cancelOrder(item)">取消订单</button>
+					<button class="action-btn recom" @click.stop="topay(item)">继续支付</button>
+				</view>
 
-			<!-- 根据订单状态显示不同的按钮 -->
-			<view class="action-box b-t" v-if="item.order_info.status === '待支付' || item.order_info.status === '待付款'">
-				<button class="action-btn" @click="cancelOrder(item)">取消订单</button>
-				<!-- <button class="action-btn" @click="continuePay(item)">继续支付</button> -->
-				<button class="action-btn recom" @click="topay(item)">继续支付</button>
-			</view>
+				<view class="action-box b-t" v-if="item.order_info.status === '待发货'">
+					<button class="action-btn" @click.stop="gotoDetail(item)">订单详情</button>
+					<button class="action-btn" @click.stop="to_return(item)">申请售后</button>
+					<button class="action-btn" @click.stop="$toast('已经向商家推送消息啦')">催发货</button>
+				</view>
 
-			<view class="action-box b-t" v-if="item.order_info.status === '待发货'">
-				<button class="action-btn" @click.stop="gotoDetail(item)">订单详情</button>
-				<button class="action-btn" @click.stop="tuikuan(item)">退款</button>
-				<button class="action-btn" @click.stop="$toast('已经向商家推送消息啦')">催发货</button>
-			</view>
+				<view class="action-box b-t" v-if="item.order_info.status === '已发货'">
+					<button class="action-btn" @click.stop="to_return(item)">申请售后</button>
+					<button class="action-btn" @click.stop="gotoDetail(item)">订单详情</button>
+					<button class="action-btn" @click.stop="showLogistics(item)">查看物流</button>
+					<button class="action-btn" @click.stop="comfirm(item)">确认收货</button>
+				</view>
 
-			<view class="action-box b-t" v-if="item.order_info.status === '已发货'">
-				<button class="action-btn" @click.stop="gotoDetail(item)">订单详情</button>
-				<button class="action-btn" @click.stop="showLogistics(item)">查看物流</button>
-				<button class="action-btn" @click.stop="comfirm(item)">确认收货</button>
+				<view class="action-box b-t" v-if="item.order_info.status === '已完成'">
+					<button class="action-btn" @click.stop="gotoDetail(item)">订单详情</button>
+					<button class="action-btn" @click.stop="to_comment(item)">评价</button>
+					<button class="action-btn" @click.stop="to_return(item)">申请售后</button>
+				</view>
 			</view>
-
-			<view class="action-box b-t" v-if="item.order_info.status === '已完成'">
-				<button class="action-btn" @click.stop="gotoDetail(item)">订单详情</button>
-				<button class="action-btn" @click.stop="to_comment(item)">评价</button>
-				<button class="action-btn" @click.stop="to_return(item)">申请售后</button>
-			</view>
-
-			<!-- <view class="action-box b-t" v-if="item.order_info.status === '已发货'">
-				<button class="action-btn" @click="showLogistics(item)">查看物流</button>
-			</view> -->
 		</view>
 
 		<swiper :current="tabCurrentIndex" class="swiper-box" duration="300" @change="changeTab">
@@ -165,7 +161,7 @@ export default {
 	methods: {
 		cancelOrder(e) {
 			this.$comfirm("订单还没有支付,确定要删除吗?", cf => {
-				this.$put(`/mini_core/shop-order/${e.id}/cancel`, {}, res => {
+				this.$put(`/wx_mini_app/shop-order/${e.id}/cancel`, {}, res => {
 					this.$toast("取消成功");
 					this.reload_list();
 				});
@@ -218,16 +214,16 @@ export default {
 
 		tuikuan(item) {
 			let _this = this;
+			console.log("item.order_info.order_no",item.order_info.order_no)
 			uni.showModal({
 				title: '提示',
 				content: '亲，确定要发起退款嘛',
 				success: function (res) {
 					if (res.confirm) {
 						var o = {};
-						o.id = item.id;
-						o.refundStat = 1;  //申请中
-						o.stat = 5;
-						_this.$post("order/update", o, function (res) {
+						o.order_no = item.order_info.order_no;
+						o.status = "退款中";  //申请中
+						_this.$post("/wx_mini_app/shop-order/status", o, function (res) {
 							uni.showToast({ title: '申请成功' });
 							setTimeout(function () {
 								uni.navigateTo({
@@ -244,7 +240,8 @@ export default {
 		},
 
 		to_return(e) {
-			this.$navigateTo("/pages/order/return?order_id=" + e.id);
+			uni.setStorageSync('temp_order_data', e);
+			this.$navigateTo("/pages/order/return?order_no=" + e.order_info.order_no);
 		},
 
 		getAmount(e) {
@@ -431,101 +428,94 @@ page,
 		}
 	}
 
-	/* 多条商品 */
-	.goods-box {
-		height: 160upx;
-		padding: 20upx 0;
-		white-space: nowrap;
-
-		.goods-item {
-			width: 120upx;
-			height: 120upx;
-			display: inline-block;
-			margin-right: 24upx;
-		}
-
-		.goods-img {
-			display: block;
-			width: 100%;
-			height: 100%;
+	/* 每个商品单独一行展示 */
+	.goods-item-row {
+		padding: 20rpx 30rpx;
+		border-bottom: 1px solid #f5f5f5;
+		
+		&:last-child {
+			border-bottom: none;
 		}
 	}
 
-	/* 单条商品 */
-	.goods-box-single {
+	.goods-content {
 		display: flex;
-		padding: 20upx 0;
+		align-items: center;
+	}
 
-		.goods-img {
-			display: block;
-			width: 120upx;
-			height: 120upx;
+	.goods-img {
+		width: 140rpx;
+		height: 140rpx;
+		border-radius: 6rpx;
+		margin-right: 24rpx;
+	}
+
+	.goods-info {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.goods-title {
+		font-size: 28rpx;
+		color: #333;
+		margin-bottom: 10rpx;
+		line-height: 1.3;
+	}
+
+	.goods-spec {
+		font-size: 24rpx;
+		color: #999;
+		margin-bottom: 10rpx;
+	}
+
+	.goods-price-box {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.goods-price {
+		font-size: 28rpx;
+		color: #333;
+		
+		&:before {
+			content: '¥';
+			font-size: 24rpx;
 		}
+	}
 
-		.right {
-			flex: 1;
-			display: flex;
-			flex-direction: column;
-			padding: 0 30upx 0 24upx;
-			overflow: hidden;
+	.goods-count {
+		font-size: 24rpx;
+		color: #999;
+	}
 
-			.title {
-				font-size: 28upx + 2upx;
-				color: #333333;
-				line-height: 1;
-			}
-
-			.attr-box {
-				font-size: 24upx + 2upx;
-				color: #f8f6fc;
-				padding: 10upx 12upx;
-			}
-
-			.price {
-				font-size: 28upx + 2upx;
-				color: #333333;
-
-				&:before {
-					content: '￥';
-					font-size: 24upx;
-					margin: 0 2upx 0 8upx;
-				}
-			}
-		}
+	/* 订单底部信息和总金额 */
+	.order-footer {
+		padding: 20rpx 30rpx;
+		border-top: 1px solid #f8f8f8;
+		background-color: #fff;
 	}
 
 	.price-box {
 		display: flex;
 		justify-content: flex-end;
-		align-items: baseline;
-		padding: 20upx 30upx;
-		font-size: 24upx + 2upx;
-		color: #000000;
-
-		.num {
-			margin: 0 8upx;
-			color: #333333;
-		}
-
-		.price {
-			font-size: 32upx;
-			color: #333333;
-
-			&:before {
-				content: '￥';
-				font-size: 24upx;
-				margin: 0 2upx 0 8upx;
-			}
-		}
+		align-items: center;
+		font-size: 26rpx;
+		color: #333;
 	}
 
+	.total-label {
+		margin-left: 20rpx;
+	}
+
+	/* 修改操作按钮区域样式 */
 	.action-box {
 		display: flex;
 		justify-content: flex-end;
-		align-items: center;
-		height: 100upx;
-		position: relative;
-		padding-right: 30upx;
+		margin-top: 20rpx;
+		padding-top: 20rpx;
+		border-top: 1px solid #f5f5f5;
 	}
 
 	.action-btn {

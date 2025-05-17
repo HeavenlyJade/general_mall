@@ -79,7 +79,7 @@
 					</view>
 					<text class="icon-text">已完成</text>
 				</view>
-				<view class="order-icon-item" @click="$navigateTo('/pages/order/order-refund')">
+				<view class="order-icon-item" @click="$navigateTo('/pages/order/order-refund?status=退款中')">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/refund_after_sales.png" class="tool-icon-image"></image>
 					</view>
@@ -98,12 +98,12 @@
 					</view>
 					<text class="tool-text">全国门店</text>
 				</view>
-				<view class="tool-item" @click="$navigateTo('/pages/user/collect')">
+				<!-- <view class="tool-item" @click="$navigateTo('/pages/user/collect')">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/coupon.png" class="tool-icon-image"></image>
 					</view>
 					<text class="tool-text">优惠券</text>
-				</view>
+				</view> -->
 				<view class="tool-item" @click="$navigateTo('/pages/address/address')">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/address.png" class="tool-icon-image"></image>
@@ -282,7 +282,7 @@ export default {
 			}
 		},
 		getHeaderBgImage() {
-			this.$get('/mini_core/banners/by-type/user_bg', {}, res => {
+			this.$get('/wx_mini_app/banners/by-type/user_bg', {}, res => {
 				if (res && res.items && res.items.length > 0) {
 					this.headerBgImage = res.items[0].upload_image;
 				}

@@ -89,7 +89,7 @@ export default {
 	methods: {
 
 		initCateList() {
-			this.$get('/mini_core/product-category', {
+			this.$get('/wx_mini_app/product-category', {
 				page: 1,
 				size: 100
 			}, res => {
@@ -120,7 +120,7 @@ export default {
 			this.loading = true
 			const categoryId = this.categoryList[this.showCategoryIndex].id
 
-			this.$get('/mini_core/shop-product', {
+			this.$get('/wx_mini_app/shop-product', {
 				page: this.currentPage,
 				size: this.pageSize,
 				need_total_count: true,

@@ -5,7 +5,6 @@ import CONFIG from "../data/constant.js"
 
 // 全局函数处理401未授权
 function handleUnauthorized() {
-	console.log("收到401响应，清除登录状态并跳转");
 	// 清除token
 	data_local("token", "");
 	// 清除用户数据

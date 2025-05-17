@@ -300,7 +300,7 @@ Core.prototype.setUser=function(u){
 export function setUser(e) {return mainUtil.setUser(e);}
 
 Core.prototype.refreshUser = function (userid, func) {  //刷新local中的user缓存 
-   get(`/mini_core/shop_users/${userid}`, {}, function(res){
+   get(`/wx_mini_app/shop_users/${userid}`, {}, function(res){
       
       // 保存用户数据到本地
       if (res && res.code === 200) {

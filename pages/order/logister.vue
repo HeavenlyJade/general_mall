@@ -94,7 +94,7 @@ export default {
 				content: '确定已收到商品吗？',
 				success: (res) => {
 					if (res.confirm) {
-						this.$put(`/mini_core/shop-order/${this.orderId}/confirm`, {}, res => {
+						this.$put(`/wx_mini_app/shop-order/${this.orderId}/confirm`, {}, res => {
 							uni.showToast({
 								title: '确认收货成功',
 								icon: 'success'
