@@ -31,12 +31,17 @@
 					</view>
 					<view>
 
-						<radio-group class="block"  @change="RadioboxChange" v-if="subject.type===1||subject.type===3">
-							<view class="cu-form-group flex " style="margin-top: 1rem;"  v-for="(option,index) in subject.optionList" :key="index">
+						<radio-group class="block" @change="RadioboxChange" v-if="subject.type===1||subject.type===3">
+							<view class="cu-form-group flex " style="margin-top: 1rem;" v-for="(option,index) in subject.optionList" :key="index">
 								<radio :value="option.id"></radio>
 								<view class="title text-black">{{option.id}}.{{option.content}}</view>
 							</view>
 						</radio-group>
+
+						<view class="cu-form-group" v-if="showCustomReason">
+							<view class="title">请输入原因：</view>
+							<input v-model="customReason" placeholder="请输入退货原因" />
+						</view>
 					</view>
 					</view>
 				</swiper-item>
@@ -76,7 +81,9 @@
 				tel:"",
 				order_data:{},
 				productList: [],        // 订单商品列表
-				selectedProducts: []    // 已选择的商品
+				selectedProducts: [],    // 已选择的商品
+				showCustomReason: false,
+				customReason: '',
 			}
 		},
 		onReady() {
@@ -154,7 +161,14 @@
 					return;
 				}
 				
-				if (!this.reason) {
+				// 如果是自定义原因，则使用用户输入的内容
+				if (this.showCustomReason) {
+					if (!this.customReason.trim()) {
+						uni.showToast({ title: '请输入退货原因', icon: 'none' });
+						return;
+					}
+					this.reason = this.customReason;
+				} else if (!this.reason) {
 					uni.showToast({ title: '请选择退货理由', icon: 'none' });
 					return;
 				}
@@ -175,17 +189,21 @@
 				o.order_no = this.order_no;
 				
 				var refundp_detail = {};
-				refundp_detail.reason = this.reason;
-				refundp_detail.products = selectedItems; // 使用提取的关键信息
-				o.refundpDetail =refundp_detail;
+				o.return_detail =selectedItems;
+				o.reason = this.reason;
+
 				console.log("退货商品信息:", o);
 
-				// this.$post("/wx_mini_app/shop-order/status", o, function(res) {
-				// 	uni.showToast({ title: '申请成功' });
-				// 	uni.redirectTo({
-				// 		"url":"/pages/order/order-refund?state='退款中,已退款'"
-				// 	})
-				// })
+				this.$post("/wx_mini_app/shop-order/shop-order-return", o, function(res) {
+					if (res.code==200) {
+						uni.showToast({ title: '申请成功' });
+						// uni.redirectTo({
+						// 	"url":"/pages/order/order-refund?state='退款中,已退款'"
+						// })
+					}else{
+						uni.showToast({ title: '申请失败' });
+					}
+				})
 			},
 			SwiperChange: function(e) { //滑动事件
 			
@@ -207,20 +225,25 @@
 						this.selectedProducts.push(this.productList[index]);
 					}
 				}
-				console.log("已选择的商品", this.selectedProducts);
 			},
-			RadioboxChange : function(e) { //单选选中
-				
+			RadioboxChange: function(e) {
 				var items = this.subjectList[this.subjectIndex].optionList;
 				var values = e.detail.value;
-				console.log(items)
-	            for(let i in items){
-					var item=items[i];
-					if(item.id===values){
-						this.reason=item.content;
+				
+				for(let i in items){
+					var item = items[i];
+					if(item.id === values){
+						// 判断是否是"其他原因"
+						if(item.content === "其它原因"){
+							this.showCustomReason = true;
+							// 先设置为空，等用户输入后再更新
+							this.reason = "";
+						} else {
+							this.showCustomReason = false;
+							this.reason = item.content;
+						}
 					}
 				}
-				
 			},
 			
 		}
