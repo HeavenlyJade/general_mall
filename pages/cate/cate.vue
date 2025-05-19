@@ -69,7 +69,8 @@ export default {
 			pageSize: 10,
 			loading: false,
 			noMore: false,
-			platform: ''
+			platform: '',
+			targetCategoryId: null
 		}
 	},
 	onNavigationBarSearchInputClicked: async function (e) {
@@ -77,14 +78,17 @@ export default {
 		this.$navigateTo(`/pages/goods/HM-search`);
 	},
 	onLoad() {
-		// 判断平台
-		// #ifdef H5
-		this.platform = 'H5'
-		// #endif
 
-		this.initCateList();
-		//this.getBannerList();
+	},
+	onShow() {
 
+		const savedCategoryId = uni.getStorageSync('current_category_id');
+		if (savedCategoryId) {
+			this.targetCategoryId = parseInt(savedCategoryId);
+			this.initCateList();
+		} else {
+			this.initCateList();
+		}
 	},
 	methods: {
 
@@ -95,14 +99,23 @@ export default {
 			}, res => {
 				if (res.code === 200 && res.data) {
 					// 直接使用数据并排序
-					this.categoryList = res.data.sort((a, b) => a.sort_order - b.sort_order)
-
-					// 默认显示第一个分类
+					this.categoryList = res.data.sort((a, b) => a.sort_order - b.sort_order);
+					
+					// 如果有目标分类ID，找到对应的索引
+					if (this.targetCategoryId) {
+						const index = this.categoryList.findIndex(item => item.id === this.targetCategoryId);
+						if (index !== -1) {
+							this.showCategory(index);
+							return;
+						}
+					}
+					
+					// 如果没有目标分类ID或没找到，显示第一个分类
 					if (this.categoryList.length > 0) {
-						this.showCategory(0) // 这里会触发加载商品
+						this.showCategory(0);
 					}
 				}
-			})
+			});
 		},
 
 		//分类切换显示
