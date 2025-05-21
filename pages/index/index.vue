@@ -1,28 +1,8 @@
 <template>
 	<view class="page">
 		<!-- 顶部文字 -->
-		<view class="brand-header">
-			<view class="brand-title">
-				<text class="brand-text">金酱</text>
-			</view>
-		</view>
 
-		<!-- 顶部banner -->
-		<view class="banner-container">
-			<swiper class="banner-swiper" circular autoplay interval="3000" duration="1000" indicator-dots
-				indicator-color="rgba(255,255,255,0.6)" indicator-active-color="#fff">
-				<swiper-item v-for="(item, index) in bannerList" :key="index">
-					<image :src="item.upload_image" mode="aspectFill" class="banner-image" />
-				</swiper-item>
-			</swiper>
-		</view>
 
-		<!-- 产品类型轮播 -->
-		<view class="category-scroll">
-			<scroll-view scroll-x="true" class="category-scroll-view">
-				<view class="category-item" v-for="(item, index) in categoryItems" :key="index" @click="toCategory(item, index)">
-					<image :src="item.icon || item.image" mode="aspectFit" class="category-image" />
-					<text class="category-name">{{item.name}}</text>
 		<!-- 分享模块组件 -->
 		<share-module :title="shareTitle" :imageUrl="shareImage" :path="sharePath" :content="shareContent"
 			@scene-parsed="handleSceneParsed">
@@ -40,6 +20,17 @@
 				</swiper-item>
 			</swiper>
 		</view>
+
+		<!-- 产品类型轮播 -->
+		<view class="category-scroll">
+			<scroll-view scroll-x="true" class="category-scroll-view">
+				<view class="category-item" v-for="(item, index) in categoryItems" :key="index" @click="toCategory(item, index)">
+					<image :src="item.icon || item.image" mode="aspectFit" class="category-image" />
+					<text class="category-name">{{item.name}}</text>
+				</view>
+			</scroll-view>
+		</view>
+
 		<!-- 品牌介绍和产品系列组合 -->
 		<view class="category-section" v-for="(item, index) in categoryList" :key="item.id">
 			<!-- 品牌介绍 -->
@@ -52,11 +43,7 @@
 						</view>
 					</view>
 				</view>
-			</scroll-view>
-		</view>
-
-		<!-- 品牌介绍和产品系列组合 -->
-		<view class="category-section" v-for="(item, index) in categoryList" :key="item.id">
+			</view>
 
 			<!-- 对应的产品系列 -->
 			<view class="product-grid">
@@ -70,8 +57,6 @@
 				</view>
 			</view>
 		</view>
-
-
 	</view>
 </template>
 

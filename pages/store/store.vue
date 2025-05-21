@@ -183,7 +183,8 @@ export default {
           that.userLocation.longitude = res.longitude;
           that.fetchStoreList();
         },
-        fail: function() {
+        fail: function(res) {
+          console.log('获取位置信息失败', res);
           uni.showToast({
             title: '获取位置信息失败',
             icon: 'none'
