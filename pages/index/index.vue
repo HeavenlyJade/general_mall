@@ -94,7 +94,7 @@ export default {
 	},
 	methods: {
 		loadBannerData() {
-			this.$get('/mini_core/banners/by-type/index', {}, res => {
+			this.$get('/wx_mini_app/banners/by-type/index', {}, res => {
 				if (res.items) {
 					this.bannerList = res.items
 				}
@@ -159,7 +159,7 @@ export default {
 		// 加载分类项目
 		loadCategoryItems() {
 			// 使用cate.vue中的接口获取分类数据
-			this.$get('/mini_core/product-category', {
+			this.$get('/wx_mini_app/product-category', {
 				page: 1,
 				size: 100
 			}, res => {
