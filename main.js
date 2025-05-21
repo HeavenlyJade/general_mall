@@ -115,8 +115,10 @@ Vue.prototype.$hexHash = hashUtil.hexHash;
 Vue.prototype.$hashEquals = hashUtil.hashEquals
 
 /* ================================================================== */
+import shareMixin from './store/mixins/share.js'
 
-
+// 添加这一行，注册全局混入
+Vue.mixin(shareMixin)
 
 import store from "./store/index.js";
 const app = new Vue({

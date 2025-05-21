@@ -5,7 +5,11 @@
       <view class="title">分销规则</view>
     </view>
 
-    <view class="content">
+    <view class="loading-container" v-if="loading">
+      <view class="loading-text">加载中...</view>
+    </view>
+
+    <view class="content" v-if="!loading">
       <view class="user-info" v-if="isDistributor">
         <view class="user-level">当前等级：{{ userInfo.level }}</view>
         <view class="progress-container">
@@ -16,19 +20,12 @@
         </view>
       </view>
 
-      <view class="section">
-        <view class="section-title">等级体系</view>
-        <view class="section-content">
-          我们的分销系统共设置7个等级，从LV0到LV6，每个等级对应不同的分销权益。
+      <view class="section" v-for="(section, index) in configSections" :key="index" v-if="section.title">
+        <view class="section-title">{{ section.content }}</view>
+        <view class="section-content" v-if="!section.isHtml">
+          {{ section.title }}
         </view>
-      </view>
-
-      <view class="section">
-        <view class="section-title">升级条件</view>
-        <view class="section-content">
-          <view class="condition-item">• 初始注册用户为LV0级别</view>
-          <view class="condition-item">• 每提升一个等级需要累计消费10,000元</view>
-          <view class="condition-item">• LV6为最高等级，需累计消费60,000元</view>
+        <view class="section-content" v-else v-html="formatText(section.title)">
         </view>
       </view>
 
@@ -39,7 +36,7 @@
             <view class="table-header">
               <view class="th">等级</view>
               <view class="th">升级条件</view>
-              <view class="th">自购返佣</view>
+              <!-- <view class="th">自购返佣</view> -->
               <view class="th">一级分销</view>
             </view>
             <view 
@@ -50,35 +47,21 @@
             >
               <view class="td">{{ item.level }}</view>
               <view class="td">{{ item.requirement }}</view>
-              <view class="td">{{ item.selfRatio }}</view>
+              <!-- <view class="td">{{ item.selfRatio }}</view> -->
               <view class="td">{{ item.firstRatio }}</view>
             </view>
           </view>
         </view>
       </view>
 
-      <view class="section">
-        <view class="section-title">特别说明</view>
-        <view class="section-content">
-          <view class="note-item">• LV0级别不享有分销权益</view>
-          <view class="note-item">• 消费金额计算包括所有有效订单</view>
-          <view class="note-item">• 分销佣金将在订单完成后自动结算到账户</view>
-          <view class="note-item">• 分销等级会根据累计消费额自动调整</view>
-        </view>
-      </view>
-
       <view class="action-buttons">
-        <button 
+        <!-- <button 
           class="action-btn apply-btn" 
           v-if="!isDistributor"
           @tap="applyForDistributor"
-        >申请成为分销商</button>
-        <button 
-          class="action-btn share-btn" 
-          v-if="isDistributor"
-          open-type="share"
-        >分享赚佣金</button>
-        <button class="action-btn contact-btn" open-type="contact">联系客服</button>
+        >申请成为分销商</button> -->
+        <button  class="action-btn share-btn" open-type="share">分享赚佣金</button>
+        <!-- <button class="action-btn contact-btn" open-type="contact">联系客服</button> -->
       </view>
     </view>
   </view>
@@ -88,68 +71,157 @@
 export default {
   data() {
     return {
-      isDistributor: true, // 是否已经是分销商
+      loading: true, // 新增加载状态
+      isDistributor: false, // 是否已经是分销商
       userInfo: {
-        levelIndex: 1, // 对应数组索引
-        level: 'LV1',
-        totalSpent: 12500, // 已消费金额
+        levelIndex: 0, // 对应数组索引
+        level: '',
+        totalSpent: 0, // 已消费金额
       },
-      distributionRules: [
-        { level: 'LV0', requirement: '初始等级', selfRatio: '0%', firstRatio: '0%' },
-        { level: 'LV1', requirement: '消费10,000元', selfRatio: '12%', firstRatio: '20%' },
-        { level: 'LV2', requirement: '消费20,000元', selfRatio: '12%', firstRatio: '30%' },
-        { level: 'LV3', requirement: '消费30,000元', selfRatio: '12%', firstRatio: '40%' },
-        { level: 'LV4', requirement: '消费40,000元', selfRatio: '12%', firstRatio: '50%' },
-        { level: 'LV5', requirement: '消费50,000元', selfRatio: '12%', firstRatio: '60%' },
-        { level: 'LV6', requirement: '消费60,000元', selfRatio: '12%', firstRatio: '60%' }
-      ]
+      distributionRules: [],
+      configData: {
+        levelSystem: '',
+        upgradeConditions: '',
+        specialNotes: ''
+      },
+      configSections: [] // 配置部分数组
     }
   },
   computed: {
     // 下一级所需金额
     nextLevelNeed() {
-      if (this.userInfo.levelIndex >= 6) return 0; // 已是最高等级
-      const nextLevelThreshold = (this.userInfo.levelIndex + 1) * 10000;
-      return Math.max(0, nextLevelThreshold - this.userInfo.totalSpent);
+      if (!this.userInfo || this.userInfo.levelIndex >= 3) return 0; // 已是最高等级 (LV3)
+      
+      // 找到下一级别所需的消费金额
+      if (this.distributionRules && this.distributionRules.length > 0) {
+        const nextLevelIndex = this.userInfo.levelIndex + 1;
+        if (nextLevelIndex < this.distributionRules.length) {
+          const nextLevelRule = this.distributionRules[nextLevelIndex];
+          if (nextLevelRule) {
+            // 从条件中提取数字部分
+            const match = nextLevelRule.requirement.match(/(\d+)/);
+            if (match && match[1]) {
+              const nextLevelThreshold = parseFloat(match[1]);
+              return Math.max(0, nextLevelThreshold - this.userInfo.totalSpent);
+            }
+          }
+        }
+      }
+      return 0;
     },
+    
     // 进度百分比
     progressPercent() {
-      if (this.userInfo.levelIndex >= 6) return 100; // 已是最高等级
-      const currentLevelThreshold = this.userInfo.levelIndex * 10000;
-      const nextLevelThreshold = (this.userInfo.levelIndex + 1) * 10000;
-      const levelDiff = nextLevelThreshold - currentLevelThreshold;
-      const currentProgress = this.userInfo.totalSpent - currentLevelThreshold;
-      return Math.min(100, (currentProgress / levelDiff) * 100);
+      if (!this.userInfo || this.userInfo.levelIndex >= 3) return 100; // 已是最高等级 (LV3)
+      
+      if (this.distributionRules && this.distributionRules.length > 0) {
+        const currentLevelIndex = this.userInfo.levelIndex;
+        const nextLevelIndex = currentLevelIndex + 1;
+        
+        if (nextLevelIndex < this.distributionRules.length) {
+          const currentRule = this.distributionRules[currentLevelIndex];
+          const nextRule = this.distributionRules[nextLevelIndex];
+          
+          if (currentRule && nextRule) {
+            // 从条件中提取数字部分
+            const currentMatch = currentRule.requirement.match(/(\d+)/);
+            const nextMatch = nextRule.requirement.match(/(\d+)/);
+            
+            if (currentMatch && nextMatch) {
+              const currentThreshold = parseFloat(currentMatch[1]) || 0;
+              const nextThreshold = parseFloat(nextMatch[1]) || 0;
+              const levelDiff = nextThreshold - currentThreshold;
+              
+              if (levelDiff > 0) {
+                const currentProgress = this.userInfo.totalSpent - currentThreshold;
+                return Math.min(100, (currentProgress / levelDiff) * 100);
+              }
+            }
+          }
+        }
+      }
+      return 0;
     }
   },
-  onLoad() {
+
+  onShow(){
     this.getUserDistributionInfo();
+  },
+  onLoad() {
+    // this.getUserDistributionInfo();
   },
   methods: {
     // 获取用户分销信息
     getUserDistributionInfo() {
-      // 实际开发中应该调用API获取用户信息
-      // 此处为模拟数据
+      this.loading = true; // 开始加载
       wx.showLoading({
         title: '加载中'
       });
       
-      setTimeout(() => {
-        this.isDistributor = true;
-        this.userInfo = {
-          levelIndex: 1,
-          level: 'LV1',
-          totalSpent: 12500
-        };
+      this.$post('/wx_mini_app/wx/wx_distribution_data', {}, res => {
+        console.log("res ", res)
+        if (res.grade_data) {
+          // 设置分销规则数据
+          this.distributionRules = res.grade_data.map(item => ({
+            level: item.name,
+            requirement: item.remark,
+            selfRatio: item.self_ratio + '%',
+            firstRatio: item.first_ratio + '%'
+          }));
+          console.log("this.distributionRules ", this.distributionRules)
+          
+          // 处理配置数据
+          if (res.config_data && res.config_data.length > 0) {
+            this.configSections = res.config_data.map(item => {
+              // 决定是否需要HTML渲染（包含换行符的内容）
+              const needHtml = item.title.includes('\n');
+              return {
+                content: item.content,
+                title: item.title,
+                isHtml: needHtml
+              };
+            });
+          }
+          
+          // 设置用户分销信息
+          const userData = res.distribution_user_data;
+          if (userData) {
+            this.isDistributor = userData.status === 1;
+            
+            // 使用lv_id代替grade_id
+            const userGradeId = userData.lv_id;
+            const userGradeInfo = res.grade_data.find(item => item.id === userGradeId);
+            
+            if (userGradeInfo) {
+              // 找到等级在数组中的索引
+              const levelIndex = res.grade_data.findIndex(item => item.id === userGradeId);
+              
+              this.userInfo = {
+                levelIndex: levelIndex >= 0 ? levelIndex : 0,
+                level: userGradeInfo.name,
+                totalSpent: userData.total_amount || 0  // 使用total_amount作为消费金额
+              };
+            }
+          } else {
+            this.isDistributor = false;
+          }
+        }
+        this.loading = false; // 数据加载完成
         wx.hideLoading();
-      }, 500);
+      }, err => {
+        console.error('获取分销数据失败', err);
+        uni.showToast({
+          title: '获取数据失败',
+          icon: 'none'
+        });
+        this.loading = false; // 即使出错也要设置加载完成
+        wx.hideLoading();
+      });
     },
     
-    // 申请成为分销商
-    applyForDistributor() {
-      wx.navigateTo({
-        url: '/pages/distribution/apply'
-      });
+    // 格式化文本，将\n转换为<br>
+    formatText(text) {
+      return text ? text.replace(/\n/g, '<br>') : '';
     },
     
     // 用户点击右上角分享
@@ -333,5 +405,17 @@ export default {
   background-color: #ffffff;
   color: #666666;
   border: 1rpx solid #dddddd;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300rpx;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #999;
 }
 </style>
