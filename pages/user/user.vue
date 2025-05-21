@@ -41,8 +41,8 @@
 		<view class="income-card">
 			<view class="income-title">可用收益</view>
 			<view class="income-content">
-				<view class="income-value">0</view>
-				<button class="withdraw-btn">去提现</button>
+				<view class="income-value">{{availableIncome}}</view>
+				<button class="withdraw-btn" @click="navigateToWithdraw">去提现</button>
 			</view>
 		</view>
 		
@@ -112,13 +112,13 @@
 				</view>
 	
 				
-				<view class="tool-item">
+		<!-- 		<view class="tool-item">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/business_card.png" class="tool-icon-image"></image>
 					</view>
 					<text class="tool-text">我的名片</text>
 				</view>
-		
+		 -->
 				<view class="tool-item" @click="$navigateTo('/pages/distribution/index')">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/distribution.png" class="tool-icon-image"></image>
@@ -167,6 +167,7 @@ export default {
 				{ name: '全部', icon: 'iconfont icon31yiguanzhudianpu', status: 55, "uri": "/pages/order/order" }
 			],
 			currentIndex: 0,
+			availableIncome: 0
 		};
 	},
 	methods: {
@@ -180,6 +181,7 @@ export default {
 					// 获取用户信息成功后，再进行登录操作
 					console.log('用户信息:', res);
 					this.loginWithUserInfo(res.userInfo);
+					
 				},
 				fail: (err) => {
 					console.error('获取用户信息失败:', err);
@@ -187,6 +189,7 @@ export default {
 				}
 			});
 		},
+		
 
 		// 新增方法，在获取用户信息后调用登录
 		loginWithUserInfo(userInfo) {
@@ -221,6 +224,9 @@ export default {
 								this.userInfo = userData;
 								
 								this.$toast("登录成功");
+								
+								// 登录成功后获取分销数据
+								this.fetchDistributionWithdrawInfo();
 							} else {
 								console.error('返回数据格式不正确:', result);
 								this.$toast("登录失败");
@@ -290,8 +296,40 @@ export default {
 				console.error('获取背景图片失败:', err);
 			});
 		},
+		fetchDistributionWithdrawInfo() {
+			// 先判断用户是否已登录，没有登录则不请求
+			if (!this.userInfo.id) {
+				console.log('用户未登录，不获取分销数据');
+				return;
+			}
+			
+			// 获取分销数据，主要关注可提现金额
+			this.$get("/wx_mini_app/wx/distribution_wx", {}, response => {
+				console.log('分销数据:', response);
+				
+				if (response && response.code === 200) {
+					const responseData = response.data || {};
+					
+					// 如果有收入数据，更新可提现金额显示
+					if (responseData && responseData.income && responseData.income.pending_money) {
+						// 更新页面上的收益显示
+						this.updateWithdrawAmount(responseData.income.pending_money);
+					}
+				}
+			}, error => {
+				console.error('获取分销数据失败:', error);
+			});
+		},
+		updateWithdrawAmount(amount) {
+			// 更新页面上的可用收益显示 - 使用数据绑定而不是DOM操作
+			this.availableIncome = amount || 0;
+		},
 		navigateTo(url) {
 			this.$navigateTo(url);
+		},
+		navigateToWithdraw() {
+			// 跳转到分销中心的提现页面
+			this.$navigateTo('/pages/distribution/withdraw');
 		}
 	},
 	onLoad() {
@@ -302,6 +340,7 @@ export default {
 		this.getuser();
 		this.getHeaderBgImage();
 		this.clearLoginStatus();
+		this.fetchDistributionWithdrawInfo();
 	}
 };
 </script>

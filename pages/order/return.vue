@@ -197,9 +197,9 @@
 				this.$post("/wx_mini_app/shop-order/shop-order-return", o, function(res) {
 					if (res.code==200) {
 						uni.showToast({ title: '申请成功' });
-						// uni.redirectTo({
-						// 	"url":"/pages/order/order-refund?state='退款中,已退款'"
-						// })
+						uni.redirectTo({
+							"url":"/pages/order/order-refund?state='退款中,已退款'"
+						})
 					}else{
 						uni.showToast({ title: '申请失败' });
 					}

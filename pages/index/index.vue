@@ -6,7 +6,7 @@
 				<text class="brand-text">金酱</text>
 			</view>
 		</view>
-		
+
 		<!-- 顶部banner -->
 		<view class="banner-container">
 			<swiper class="banner-swiper" circular autoplay interval="3000" duration="1000" indicator-dots
@@ -23,13 +23,41 @@
 				<view class="category-item" v-for="(item, index) in categoryItems" :key="index" @click="toCategory(item, index)">
 					<image :src="item.icon || item.image" mode="aspectFit" class="category-image" />
 					<text class="category-name">{{item.name}}</text>
+		<!-- 分享模块组件 -->
+		<share-module :title="shareTitle" :imageUrl="shareImage" :path="sharePath" :content="shareContent"
+			@scene-parsed="handleSceneParsed">
+		</share-module>
+
+		<!-- 顶部banner -->
+		<view class="banner-container">
+			<swiper class="banner-swiper" circular :current="currentSwiper" @change="swiperChange" indicator-dots
+				indicator-color="rgba(255,255,255,0.6)" indicator-active-color="#fff">
+				<swiper-item v-for="(item, index) in bannerList" :key="index">
+					<video v-if="item.upload_video" :src="item.upload_video" autoplay loop muted controls="false"
+						class="banner-video" show-play-btn="false" show-progress="false"
+						show-fullscreen-btn="false"></video>
+					<image v-else :src="item.upload_image" mode="aspectFill" class="banner-image" />
+				</swiper-item>
+			</swiper>
+		</view>
+		<!-- 品牌介绍和产品系列组合 -->
+		<view class="category-section" v-for="(item, index) in categoryList" :key="item.id">
+			<!-- 品牌介绍 -->
+			<view class="brand-intro">
+				<view class="brand-content" :style="{ 'background-image': `url(${item.icon})` }">
+					<view class="content-overlay">
+						<view class="text-container">
+							<!-- <view class="title">{{item.name}}</view> -->
+							<rich-text :nodes="item.content"></rich-text>
+						</view>
+					</view>
 				</view>
 			</scroll-view>
 		</view>
-		
+
 		<!-- 品牌介绍和产品系列组合 -->
 		<view class="category-section" v-for="(item, index) in categoryList" :key="item.id">
-			
+
 			<!-- 对应的产品系列 -->
 			<view class="product-grid">
 				<view class="product-item" v-for="product in productList[item.id]" :key="product.id"
@@ -43,16 +71,6 @@
 			</view>
 		</view>
 
-		<!-- 引入分享组件 -->
-		<share-module
-			ref="shareModule"
-			:title="shareTitle"
-			:image-url="shareImage"
-			:path="sharePath"
-			:content="shareContent"
-			@scene-parsed="handleScene"
-			@update:menuStyle="updateMenuStyle"
-		/>
 
 	</view>
 </template>
@@ -64,39 +82,87 @@ export default {
 	components: {
 		ShareModule
 	},
+	// 添加小程序分享方法 - 分享给朋友
+	onShareAppMessage() {
+		return {
+			title: this.shareTitle,
+			path: this.sharePath,
+			imageUrl: this.shareImage,
+			success: function () {
+				uni.showToast({
+					title: '分享成功'
+				})
+			},
+			fail: function () {
+				uni.showToast({
+					title: '分享失败',
+					icon: 'none'
+				})
+			}
+		}
+	},
+
+	// 分享到朋友圈
+	onShareTimeline() {
+		return {
+			title: this.shareTitle,
+			query: this.sharePath.split('?')[1] || '',
+			imageUrl: this.shareImage
+		}
+	},
+
 	data() {
 		return {
 			categoryList: [],
 			productList: {},
+			bannerImage: '',
+
+			// 分享相关数据
+			shareTitle: '东箭酒业 - 传统美酒',
+			shareImage: '',
+			sharePath: '/pages/index/index',
+			shareContent: '精选东箭传统美酒，品味非凡',
+
+			// 统计分析数据
+			pageViews: 0,
+			sourceChannel: '',
+			referrer: '',
 			bannerList: [],
-			navItems: [],
-			categoryItems: [],
-			shareTitle: '金酱小程序',
-			shareImage: '', // 分享图片
-			sharePath: '/pages/index/index', // 分享路径
-			shareContent: '精选商品推荐', // 分享描述
-			menuButtonInfoStyle: '',
-			headerMarginTopStyle: ''
+			currentSwiper: 0,
+			swiperTimer: null,
 		}
 	},
 	onLoad(options) {
-		// 处理小程序码场景值
-		if (options && options.scene) {
-			this.$refs.shareModule.handleSceneCode(options.scene)
-		}
-		
 		this.loadBannerData()
 		this.loadCategoryData()
+
+		// 处理场景值和统计
+		if (options.scene) {
+			this.parseScene(options.scene)
+		}
+
+		// 记录来源渠道
+		if (options.channel) {
+			this.sourceChannel = options.channel
+			// 可以调用API记录渠道数据
+		}
+
+		// 记录页面访问
+		this.recordPageView()
 	},
 	onShow() {
 		this.loadBannerData()
 		this.loadCategoryData()
 	},
 	methods: {
+
 		loadBannerData() {
-			this.$get('/wx_mini_app/banners/by-type/index', {}, res => {
+			this.$get('/wx_mini_app/banners/by-type/index_bg', {}, res => {
 				if (res.items) {
 					this.bannerList = res.items
+					if (this.bannerList.length > 0) {
+						this.bannerImage = this.bannerList[0].upload_image || ''
+					}
 				}
 			})
 		},
@@ -104,31 +170,30 @@ export default {
 			this.$get('/wx_mini_app/product-category', {
 				page: 1,
 				size: 10,
-		
+				type: 'index'
 			}, res => {
-				if (res.code === 200) {
+				if(res.code === 200) {
 					this.categoryList = res.data
 					// 为每个分类加载产品
 					this.categoryList.forEach(category => {
 						this.loadProducts(category.id)
 					})
-					this.loadCategoryItems()
 				}
 			}, null, true)
 		},
 		loadProducts(categoryId) {
 			// 初始化产品列表对象
-			if (!this.productList[categoryId]) {
+			if(!this.productList[categoryId]) {
 				this.$set(this.productList, categoryId, [])
 			}
-			
+
 			this.$get('/wx_mini_app/shop-product', {
 				page: 1,
 				size: 4,
 				need_total_count: true,
 				category_id: categoryId
 			}, res => {
-				if(res.code === 200) {
+				if (res.code === 200) {
 					// 将产品数据存储到对应分类ID下
 					this.$set(this.productList, categoryId, res.data)
 				}
@@ -136,9 +201,9 @@ export default {
 		},
 		getFirstImage(images) {
 			try {
-			
+
 				return images[0] || ''
-			} catch(e) {
+			} catch (e) {
 				return ''
 			}
 		},
@@ -150,104 +215,82 @@ export default {
 		toWholesale() {
 			this.$navigateTo('/pages/wholesale/index')
 		},
-		toCategory(item, index) {
-			// 保存到本地存储
-			uni.setStorageSync('current_category_id', item.id);
-			// 跳转
-			this.$navigateTo(`/pages/cate/cate`);
-		},
-		// 加载分类项目
-		loadCategoryItems() {
-			// 使用cate.vue中的接口获取分类数据
-			this.$get('/wx_mini_app/product-category', {
-				page: 1,
-				size: 100
-			}, res => {
-				if (res.code === 200 && res.data) {
-					// 获取排序后的分类列表
-					let categories = res.data.sort((a, b) => a.sort_order - b.sort_order);
-					// 筛选有图片的分类用于显示
-					this.categoryItems = categories.filter(item => item.icon).slice(0, 5);
-				}
-			})
-		},
-		// 处理场景值解析结果
-		handleScene(sceneData) {
-			if (sceneData.referrer) {
-				this.$u.vuex('referrer', sceneData.referrer)
-				// 处理邀请逻辑
+		// 解析场景值
+		parseScene(scene) {
+			try {
+				const decodedScene = decodeURIComponent(scene)
+				console.log('解析场景值:', decodedScene)
+				// 后续处理场景值逻辑
+			} catch (e) {
+				console.error('解析场景值失败', e)
 			}
 		},
-		
-		// 更新菜单样式
-		updateMenuStyle(styleInfo) {
-			this.menuButtonInfoStyle = styleInfo.menuButtonInfoStyle
-			this.headerMarginTopStyle = styleInfo.headerMarginTopStyle
+
+		// 处理分享模块返回的场景解析结果
+		handleSceneParsed(data) {
+			if (data.referrer) {
+				this.referrer = data.referrer
+				// 可以调用API记录推荐人数据
+			}
+		},
+
+		// 记录页面访问
+		recordPageView() {
+			this.pageViews++
+			// 可以调用API记录访问数据
+			console.log('页面访问次数:', this.pageViews)
+		},
+		// 切换到下一个轮播项
+		goNextSwiper() {
+			let next = this.currentSwiper + 1;
+			if (next >= this.bannerList.length) {
+				next = 0;
+			}
+			this.currentSwiper = next;
+		},
+
+		// 轮播变化事件处理
+		swiperChange(e) {
+			this.currentSwiper = e.detail.current;
+
+			// 清除之前的计时器
+			if (this.swiperTimer) clearTimeout(this.swiperTimer);
+
+			// 设置新的计时器，视频10秒，图片3秒
+			const currentItem = this.bannerList[this.currentSwiper];
+			const interval = currentItem.upload_video ? 10000 : 3000;
+			this.swiperTimer = setTimeout(() => {
+				this.goNextSwiper();
+			}, interval);
+		},
+
+		// 获取分享图片
+		initShareInfo() {
+			// 使用第一个分类的第一个产品图作为分享图
+			if (this.categoryList.length > 0) {
+				const firstCat = this.categoryList[0]
+				if (this.productList[firstCat.id] && this.productList[firstCat.id].length > 0) {
+					const firstProduct = this.productList[firstCat.id][0]
+					this.shareImage = this.getFirstImage(firstProduct.images)
+				}
+			}
 		}
 	},
-	// 添加这两个方法将组件的分享能力传递到页面
-	// #ifdef MP-WEIXIN
-	onShareAppMessage() {
-		return this.$refs.shareModule.onShareAppMessage()
-	},
-	
-	onShareTimeline() {
-		return this.$refs.shareModule.onShareTimeline()
+	watch: {
+		'productList': {
+			handler() {
+				this.initShareInfo()
+			},
+			deep: true
+		}
 	}
-	// #endif
 }
 </script>
 
 <style lang="scss">
 .page {
-	background: #ffffff;
+	background: #f5f5f5;
 	min-height: 100vh;
-}
-
-.banner-container {
-	position: relative;
-	width: 100%;
-}
-
-.banner-swiper {
-	width: 100%;
-	height: 400rpx;
-}
-
-.banner-image {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-}
-
-.brand-header {
-	padding: 100rpx 0 0 0;
-	background-color: transparent;
-	border-bottom: none;
-	margin-top: 0;
-	position: relative;
-}
-
-.brand-title {
-	display: flex;
-	justify-content: flex-start;
-	padding-left: 30rpx;
-	margin-bottom: 20rpx;
-}
-
-.brand-text {
-	font-size: 36rpx;
-	font-weight: bold;
-	color: #000000;
-	text-align: left;
-	text-shadow: none;
-}
-
-.brand-subtitle {
-	font-size: 26rpx;
-	color: #666;
-	text-align: center;
-	line-height: 1.5;
 }
 
 .video-banner {
@@ -319,53 +362,50 @@ export default {
 .product-grid {
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
-	gap: 30rpx;
-	padding: 20rpx 40rpx;
+	gap: 20rpx;
+	padding: 20rpx;
 
 	.product-item {
 		position: relative;
 		height: 460rpx;
-		width: 280rpx;
+		width: 320rpx;
 		margin: 0 auto;
-		background: #f8f8f8;
-		border-radius: 16rpx;
+		background: #fff;
+		border-radius: 12rpx;
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		padding: 0;
+		box-shadow: none;
 		padding: 20rpx;
 		box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
 
 		image {
-			width: 220rpx;
+			width: 100%;
 			height: 380rpx;
 			object-fit: contain;
-			margin-bottom: 20rpx;
+			margin-bottom: 0;
 		}
 
 		.product-info {
-			position: relative;
+			position: absolute;
 			width: 100%;
 			text-align: center;
 			padding: 10rpx;
-			bottom: auto;
-			left: auto;
-			transform: none;
-			background: none;
+			bottom: 0;
+			background: rgba(255, 255, 255, 0.9);
 
 			.name {
 				font-size: 28rpx;
-				color: #333;
-				font-weight: 500;
+				color: #8B0000;
+				font-weight: 600;
 				margin-bottom: 6rpx;
-				overflow: hidden;
-				text-overflow: ellipsis;
-				white-space: nowrap;
 			}
 
 			.sub-name {
 				font-size: 24rpx;
-				color: #666;
+				color: #996633;
 			}
 		}
 	}
@@ -404,6 +444,34 @@ export default {
 				font-size: 28rpx;
 			}
 		}
+	}
+}
+
+.banner-container {
+	width: 100%;
+	height: 400rpx;
+	position: relative;
+
+	.banner-swiper {
+		width: 100%;
+		height: 100%;
+	}
+
+	.safe-area-container {
+		width: 100%;
+		height: 100%;
+		padding: 60rpx 30rpx 20rpx 30rpx;
+		/* 增加顶部和两侧安全距离 */
+		box-sizing: border-box;
+	}
+
+	.banner-image,
+	.banner-video {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 12rpx;
+		/* 增加圆角效果 */
 	}
 }
 
@@ -470,24 +538,24 @@ export default {
 	margin: 20rpx;
 	border-radius: 16rpx;
 	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
-	
+
 	.category-scroll-view {
 		white-space: nowrap;
 		width: 100%;
 	}
-	
+
 	.category-item {
 		display: inline-block;
 		width: 170rpx;
 		text-align: center;
 		padding: 20rpx 0;
-		
+
 		.category-image {
 			width: 120rpx;
 			height: 120rpx;
 			object-fit: contain;
 		}
-		
+
 		.category-name {
 			display: block;
 			font-size: 28rpx;
