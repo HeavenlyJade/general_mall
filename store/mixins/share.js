@@ -4,10 +4,10 @@ export default {
       return {
         // 默认分享信息，可在各页面覆盖
         shareInfo: {
-          title: '东翁酒业',
+          title: '东翁酿酒 老派酱香',
           path: '',
           imageUrl: '',
-          content: '精选东翁酱酒，品味非凡'
+          content: '精选东翁传统美酒，品味非凡'
         },
         // 分享来源用户信息
         fromUser: {

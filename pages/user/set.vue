@@ -186,7 +186,7 @@ export default {
 			
 			var o = {
 				id: this.user.id,
-				real_name: this.user.real_name,
+				username: this.user.username,
 				nickname: this.user.nickname,
 				gender: this.user.gender,
 				avatar: this.user.avatar, // 优先使用新上传的头像
@@ -199,16 +199,15 @@ export default {
 			const url = `/wx_mini_app/shop_users/${userId}`;
 			
 			this.$put(url, o, function (res) {
-				console.log("res",res)
 				if (res) {
 					_this.setUser(res);
 					uni.showToast({
 						title: '保存成功',
 						icon: 'success'
 					});
-					setTimeout(() => {
-						uni.navigateBack()
-					}, 800);
+					// setTimeout(() => {
+					// 	uni.navigateBack()
+					// }, 800);
 				} else {
 					uni.showToast({
 						title: res.msg || '保存失败',

@@ -10,9 +10,9 @@
 			<swiper class="banner-swiper" circular :current="currentSwiper" @change="swiperChange" indicator-dots
 				indicator-color="rgba(255,255,255,0.6)" indicator-active-color="#fff">
 				<swiper-item v-for="(item, index) in bannerList" :key="index">
-					<video v-if="item.upload_video" :src="item.upload_video" autoplay loop muted controls="false"
-						class="banner-video" show-play-btn="false" show-progress="false"
-						show-fullscreen-btn="false"></video>
+					<video v-if="item.upload_video" :src="item.upload_video" :id="'video-' + index"
+						:autoplay="index === currentSwiper" loop controls="false" class="banner-video"
+						show-play-btn="false" show-progress="false" show-fullscreen-btn="false"></video>
 					<image v-else :src="item.upload_image" mode="aspectFill" class="banner-image" />
 				</swiper-item>
 			</swiper>
@@ -122,6 +122,16 @@ export default {
 
 		// 记录页面访问
 		this.recordPageView()
+		
+		// 设置初始视频播放
+		setTimeout(() => {
+			if(this.bannerList.length > 0 && this.bannerList[0].upload_video) {
+				const currentVideo = uni.createVideoContext('video-0');
+				if(currentVideo) {
+					currentVideo.play();
+				}
+			}
+		}, 1000);
 	},
 	onShow() {
 		this.loadBannerData()
@@ -198,7 +208,37 @@ export default {
 				console.error('解析场景值失败', e)
 			}
 		},
+		// 轮播变化事件处理
+		swiperChange(e) {
+			const oldIndex = this.currentSwiper;
+			this.currentSwiper = e.detail.current;
 
+			// 暂停上一个视频
+			if (this.bannerList[oldIndex] && this.bannerList[oldIndex].upload_video) {
+				const oldVideo = uni.createVideoContext('video-' + oldIndex);
+				if (oldVideo) {
+					oldVideo.pause();
+				}
+			}
+
+			// 播放当前视频
+			if (this.bannerList[this.currentSwiper] && this.bannerList[this.currentSwiper].upload_video) {
+				const currentVideo = uni.createVideoContext('video-' + this.currentSwiper);
+				if (currentVideo) {
+					currentVideo.play();
+				}
+			}
+
+			// 清除之前的计时器
+			if (this.swiperTimer) clearTimeout(this.swiperTimer);
+
+			// 设置新的计时器，视频10秒，图片3秒
+			const currentItem = this.bannerList[this.currentSwiper];
+			const interval = currentItem.upload_video ? 10000 : 3000;
+			this.swiperTimer = setTimeout(() => {
+				this.goNextSwiper();
+			}, interval);
+		},
 		// 处理分享模块返回的场景解析结果
 		handleSceneParsed(data) {
 			if (data.referrer) {
@@ -222,20 +262,7 @@ export default {
 			this.currentSwiper = next;
 		},
 
-		// 轮播变化事件处理
-		swiperChange(e) {
-			this.currentSwiper = e.detail.current;
-
-			// 清除之前的计时器
-			if (this.swiperTimer) clearTimeout(this.swiperTimer);
-
-			// 设置新的计时器，视频10秒，图片3秒
-			const currentItem = this.bannerList[this.currentSwiper];
-			const interval = currentItem.upload_video ? 10000 : 3000;
-			this.swiperTimer = setTimeout(() => {
-				this.goNextSwiper();
-			}, interval);
-		},
+		// 轮播变化事件处
 
 		// 获取分享图片
 		initShareInfo() {
