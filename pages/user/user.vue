@@ -13,27 +13,31 @@
 				<view class="user-id" v-if="userInfo.id">ID: {{userInfo.id}}</view>
 			</view>
 			
-			<!-- 未授权用户显示按钮 -->
-			<view v-if="!hasWxAuth" class="auth-buttons">
+			<!-- 未授权用户显示按钮  v-if="!hasWxAuth" --> 
+			<view  v-if="!hasWxAuth"  class="auth-buttons">
 				<button class="auth-btn" @click="getUserProfile">授权微信登录</button>
 			</view>
 			
+		
+			<view v-if="userInfo.id" class="logout-container">
+				<button class="logout-btn" @click="logout">退出登录</button>
+			</view>
 	
 		</view>
 		
 		<!-- 统计数据 -->
 		<view class="stats-container">
 			<view class="stat-item">
-				<view class="stat-value">0</view>
+				<view class="stat-value">{{userInfo.points || 0}}</view>
 				<view class="stat-label">积分</view>
 			</view>
 			<view class="stat-item">
-				<view class="stat-value">0</view>
-				<view class="stat-label">收益</view>
+				<view class="stat-value">{{userInfo.member_level || '无会员'}}</view>
+				<view class="stat-label">会员等级</view>
 			</view>
 			<view class="stat-item">
-				<view class="stat-value">0</view>
-				<view class="stat-label">优惠券</view>
+				<view class="stat-value">{{userInfo.balance || 0}}</view>
+				<view class="stat-label">余额</view>
 			</view>
 		</view>
 		
@@ -167,7 +171,8 @@ export default {
 				{ name: '全部', icon: 'iconfont icon31yiguanzhudianpu', status: 55, "uri": "/pages/order/order" }
 			],
 			currentIndex: 0,
-			availableIncome: 0
+			availableIncome: 0,
+			
 		};
 	},
 	methods: {
@@ -179,7 +184,7 @@ export default {
 				desc: '用于完善用戶资料', // 声明获取用户个人信息后的用途
 				success: (res) => {
 					// 获取用户信息成功后，再进行登录操作
-					console.log('用户信息:', res);
+				
 					this.loginWithUserInfo(res.userInfo);
 					
 				},
@@ -204,7 +209,21 @@ export default {
 							code: loginRes.code,
 							avatarUrl: userInfo.avatarUrl,
 							nickName: userInfo.nickName
-						};					
+						};
+						
+						// 添加分享者信息到请求中
+						const share_user_id = uni.getStorageSync("share_user_id")
+						const share_openid = uni.getStorageSync("share_openid")
+						if (share_user_id) {
+							requestData.share_user_id = share_user_id
+						}
+						if (share_openid) {
+							requestData.share_openid = share_openid
+						}
+						
+						// 打印完整的请求参数，便于调试
+						console.log('登录请求参数，包含分享信息:', requestData);
+						
 						// 发送请求到后端API
 						this.$post("/wx_mini_app/wx_auth/wechat_login", requestData, result => {
 			
@@ -227,6 +246,13 @@ export default {
 								
 								// 登录成功后获取分销数据
 								this.fetchDistributionWithdrawInfo();
+								if(share_user_id){
+									uni.removeStorage("share_user_id")
+								}
+								if(share_openid){
+									uni.removeStorage("share_openid")
+								}
+							
 							} else {
 								console.error('返回数据格式不正确:', result);
 								this.$toast("登录失败");
@@ -305,7 +331,6 @@ export default {
 			
 			// 获取分销数据，主要关注可提现金额
 			this.$get("/wx_mini_app/wx/distribution_wx", {}, response => {
-				console.log('分销数据:', response);
 				
 				if (response && response.code === 200) {
 					const responseData = response.data || {};
@@ -329,14 +354,60 @@ export default {
 		},
 		navigateToWithdraw() {
 			// 跳转到分销中心的提现页面
-			this.$navigateTo('/pages/distribution/withdraw');
-		}
+			this.$navigateTo('/pages/distribution/index');
+		},
+		logout() {
+			uni.showModal({
+				title: '提示',
+				content: '确定要退出登录吗？',
+				success: (res) => {
+					if (res.confirm) {
+						// 清除用户数据和token
+						this.$dataLocal("token", "");
+						
+						// 创建空用户数据
+						const emptyUser = {
+							headImg: '/static/img/user/default-head.png',
+							nickName: 'noname',
+							avatar: '/static/img/user/default-head.png',
+							wxHeadImg: '',
+							id: 0
+						};
+						
+						// 更新用户数据
+						this.setUser(emptyUser);
+						this.$store.dispatch("user/update", emptyUser);
+						this.userInfo = emptyUser;
+						
+						// 清除分享信息
+						uni.removeStorage({
+							key: "share_user_id",
+							success: () => console.log('清除share_user_id成功')
+						});
+						uni.removeStorage({
+							key: "share_openid",
+							success: () => console.log('清除share_openid成功')
+						});
+						
+						this.$toast("已退出登录");
+						
+						// 刷新页面
+						this.getHeaderBgImage();
+					}
+				}
+			});
+		},
 	},
-	onLoad() {
+	onLoad(options) {
+		// 获取分享来源信息
+		
 		this.getuser();
 		this.clearLoginStatus();
 	},
 	onShow() {
+	
+		
+		// 获取用户信息和其他数据
 		this.getuser();
 		this.getHeaderBgImage();
 		this.clearLoginStatus();
@@ -706,5 +777,26 @@ page {
 	border-radius: 50%;
 	border: 3rpx solid #fff;
 	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* 退出登录按钮样式 */
+.logout-container {
+	margin-top: 20rpx;
+}
+
+.logout-btn {
+	background: rgba(255, 255, 255, 0.25);
+	color: #fff;
+	font-size: 24rpx;
+	padding: 8rpx 24rpx;
+	border-radius: 30rpx;
+	border: 1px solid rgba(255, 255, 255, 0.5);
+	line-height: 1.5;
+	height: auto;
+}
+
+.logout-btn:active {
+	transform: scale(0.95);
+	background: rgba(255, 255, 255, 0.35);
 }
 </style>

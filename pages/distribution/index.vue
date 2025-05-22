@@ -12,12 +12,12 @@
     <div class="user-info-container">
       <div class="avatar">
         <image class="avatar-img" mode="aspectFill" 
-          :src="userInfo.avatar || getConst().defaultAvatar" 
+          :src="userInfo.avatar || storeUser.wxHeadImg || getConst().defaultAvatar" 
           :class="{'avatar-logged': !!userInfo.id}">
         </image>
       </div>
       <div class="user-details">
-        <div class="username">{{ userData.real_name || '未设置姓名' }}</div>
+        <div class="username">{{ storeUser.wxNickName || userData.real_name || '未设置姓名' }}</div>
         <div class="tag-container">
           <span class="tag">分销等级:LV{{ userData.grade_id || 0 }}</span>
         </div>
@@ -97,6 +97,11 @@
 
 <script>
 export default {
+  computed: {
+    storeUser() {
+      return this.$store.state.user;
+    }
+  },
   data() {
     return {
       userInfo: {},
@@ -125,6 +130,12 @@ export default {
       this.userInfo = user;
     },
     fetchDistributionData() {
+      // 首先确认用户是否已登录
+      if (!this.userInfo.id) {
+        console.log('用户未登录，不获取分销数据');
+        return;
+      }
+      
       const that = this; // 保存this引用
       this.$get("/wx_mini_app/wx/distribution_wx", {}, function(response) {
         console.log(response);
@@ -177,12 +188,12 @@ export default {
   },
   onShow() {
     this.getuser();
-    this.fetchDistributionData()
+    this.fetchDistributionData();
   },
-   onLoad(e) {
-    // this.getuser();
-    // this.fetchDistributionData()
-   },
+  onLoad() {
+    this.getuser();
+    this.fetchDistributionData();
+  },
 }
 </script>
 
@@ -233,10 +244,11 @@ export default {
   margin-right: 15px;
 }
 
-.avatar img {
+.avatar-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
 }
 
 .username {

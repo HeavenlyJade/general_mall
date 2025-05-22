@@ -6,7 +6,7 @@
 		<view class="main-line" v-if="level > 0" 
 			  :style="{ 
 				left: ((level-1) * 24 + 12) + 'px',
-				height: '40px'  <!-- 限制主干线高度 -->
+				height: '40px'  /* 限制主干线高度 */
 			  }"></view>
 			  
 		<!-- 节点连接线 -->
@@ -25,13 +25,7 @@
 		<!-- 节点内容 -->
 		<view class="node-content" @tap.stop="onNodeClick">
 		  <text class="node-name">{{ node.name }}</text>
-		  <text class="node-mobile" v-if="node.mobile">{{ node.mobile }}</text>
-		  <text 
-			v-if="node.status !== undefined" 
-			:class="['node-status', `status-${getStatusClass(node.status)}`]"
-		  >
-			{{ getStatusText(node.status) }}
-		  </text>
+		  <text class="node-username" v-if="node.nickname">{{ node.nickname }}</text>
 		</view>
 	  </view>
 	  
@@ -199,9 +193,15 @@
 	margin-right: 10px;
   }
   
-  .node-mobile {
+  .node-username {
 	font-size: 13px;
 	color: #666;
+	margin-right: 10px;
+  }
+  
+  .node-unknown {
+	font-size: 13px;
+	color: #999;
 	margin-right: 10px;
   }
   

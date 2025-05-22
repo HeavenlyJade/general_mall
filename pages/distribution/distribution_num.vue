@@ -6,7 +6,7 @@
     </view>
     
     <view class="search-box">
-      <input type="text" v-model="searchText" placeholder="搜索用户姓名" class="search-input" />
+      <input type="text" v-model="searchText" placeholder="搜索用户姓名/用户名" class="search-input" />
       <button class="search-btn" @tap="handleSearch">搜索</button>
     </view>
     
@@ -31,26 +31,30 @@
           <text class="close-btn" @tap="closeDetailModal">×</text>
         </view>
         <view class="modal-body">
-          <view class="detail-item">
+          <!-- <view class="detail-item">
             <text class="detail-label">ID:</text>
             <text class="detail-value">{{selectedUser.id}}</text>
-          </view>
+          </view> -->
           <view class="detail-item">
-            <text class="detail-label">姓名:</text>
-            <text class="detail-value">{{selectedUser.name}}</text>
+            <text class="detail-label">微信名称:</text>
+            <text class="detail-value">{{selectedUser.nickname}}</text>
           </view>
-          <view class="detail-item">
+          <!-- <view class="detail-item">
+            <text class="detail-label">用户名:</text>
+            <text class="detail-value">{{selectedUser.username || '无'}}</text>
+          </view> -->
+          <!-- <view class="detail-item">
             <text class="detail-label">手机号:</text>
-            <text class="detail-value">{{selectedUser.mobile}}</text>
-          </view>
-          <view class="detail-item">
+            <text class="detail-value">{{selectedUser.mobile || '未设置'}}</text>
+          </view> -->
+          <!-- <view class="detail-item">
             <text class="detail-label">备注:</text>
             <text class="detail-value">{{selectedUser.remark || '无'}}</text>
-          </view>
-          <view class="detail-item">
+          </view> -->
+          <!-- <view class="detail-item">
             <text class="detail-label">状态:</text>
             <text class="detail-value">{{getStatusText(selectedUser.status)}}</text>
-          </view>
+          </view> -->
         </view>
         <view class="modal-footer">
           <button class="btn" @tap="closeDetailModal">关闭</button>
@@ -97,6 +101,12 @@ export default {
           console.log("response.data", response.data);
           // 设置数据
           this.treeData = response.data;
+          
+          // 修改根节点的名称，移除"未知"字样
+          if (this.treeData && this.treeData.name) {
+            this.treeData.name = this.treeData.name.replace(/\s*未知\s*/, '');
+          }
+          
           // 默认展开根节点
           if (this.treeData.id) {
             this.expandedNodes = [this.treeData.id];
@@ -216,6 +226,7 @@ export default {
       const lowerKeyword = keyword.toLowerCase();
       return (
         (node.name && node.name.toLowerCase().includes(lowerKeyword)) ||
+        (node.username && node.username.toLowerCase().includes(lowerKeyword)) ||
         (node.mobile && node.mobile.toLowerCase().includes(lowerKeyword))
       );
     }

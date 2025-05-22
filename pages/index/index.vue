@@ -12,10 +12,14 @@
 				<swiper-item v-for="(item, index) in bannerList" :key="index">
 					<video v-if="item.upload_video" :src="item.upload_video" :id="'video-' + index"
 						:autoplay="index === currentSwiper" loop controls="false" class="banner-video"
-						show-play-btn="false" show-progress="false" show-fullscreen-btn="false"></video>
+						show-play-btn="false" show-progress="false" show-fullscreen-btn="false" :muted="isMuted"></video>
 					<image v-else :src="item.upload_image" mode="aspectFill" class="banner-image" />
 				</swiper-item>
 			</swiper>
+			<!-- 添加静音按钮 -->
+			<view class="mute-button" @click="toggleMute">
+				<text>{{isMuted ? '🔇' : '🔊'}}</text>
+			</view>
 		</view>
 		<!-- 品牌介绍和产品系列组合 -->
 		<view class="category-section" v-for="(item, index) in categoryList" :key="item.id">
@@ -57,9 +61,21 @@ export default {
 	},
 	// 添加小程序分享方法 - 分享给朋友
 	onShareAppMessage() {
+		// 获取当前用户信息
+		const userInfo = this.getUser() || {}
+		const openid = userInfo.openid || ''
+		const user_id =  userInfo.user_id || ''
+		
+		// 构建带有用户信息的分享路径
+		let sharePath = this.sharePath || this.getPagePath()
+		const separator = sharePath.includes('?') ? '&' : '?'
+		
+		// 添加分享者的用户ID和openid
+		sharePath += `${separator}share_openid=${openid}&share_user_id=${user_id}`
+		
 		return {
 			title: this.shareTitle,
-			path: this.sharePath,
+			path: sharePath,
 			imageUrl: this.shareImage,
 			success: function () {
 				uni.showToast({
@@ -103,6 +119,7 @@ export default {
 			bannerList: [],
 			currentSwiper: 0,
 			swiperTimer: null,
+			isMuted: true,
 		}
 	},
 	onLoad(options) {
@@ -274,6 +291,9 @@ export default {
 					this.shareImage = this.getFirstImage(firstProduct.images)
 				}
 			}
+		},
+		toggleMute() {
+			this.isMuted = !this.isMuted;
 		}
 	},
 	watch: {
@@ -470,6 +490,26 @@ export default {
 		object-fit: cover;
 		border-radius: 12rpx;
 		/* 增加圆角效果 */
+	}
+
+	.mute-button {
+		position: absolute;
+		bottom: 80rpx;
+		right: 20rpx;
+		background: transparent;
+		border-radius: 50%;
+		width: 60rpx;
+		height: 60rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 100;
+
+		text {
+			font-size: 36rpx;
+			color: #fff;
+			text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+		}
 	}
 }
 
