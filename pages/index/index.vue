@@ -91,10 +91,10 @@ export default {
 			bannerImage: '',
 
 			// 分享相关数据
-			shareTitle: '东箭酒业 - 传统美酒',
+			shareTitle: '东翁酿酒 老派酱香',
 			shareImage: '',
 			sharePath: '/pages/index/index',
-			shareContent: '精选东箭传统美酒，品味非凡',
+			shareContent: '精选东翁传统美酒，品味非凡',
 
 			// 统计分析数据
 			pageViews: 0,
