@@ -1,62 +1,64 @@
 <template>
 	<view>
-		<view class="header-space"></view>
-		<fixed-search :placeholder="'输入关键词搜索'" @search="tosearch"></fixed-search>
-
-		<!-- #ifdef H5 -->
-		<view class="category-list cont-mt" style="margin-top: 2rem;">
-			<!-- #endif -->
-			<!-- #ifdef MP-WEIXIN -->
-			<view class="category-list cont-mt" style="margin-top: 4rem;">
+		<view class="status-bar-height"></view>
+		<custom-header :logoUrl="logoUrl" :logoName="logoName" :showSearch="false" :showMenu="false" />
+		<view class="cate-content-card">
+			<!-- #ifdef H5 -->
+			<view class="category-list cont-mt" >
 				<!-- #endif -->
-				<!-- 左侧分类导航 -->
+				<!-- #ifdef MP-WEIXIN -->
+				<view class="category-list cont-mt" >
+					<!-- #endif -->
+					<!-- 左侧分类导航 -->
 
-				<scroll-view scroll-y="true" class="left">
-					<view class="row" v-for="(category, index) in categoryList" :key="category.id"
-						:class="[index == showCategoryIndex ? 'on' : '']" @tap="showCategory(index)">
-						<view class="text">
-							<view class="block"></view>
-							{{ category.name }}
+					<scroll-view scroll-y="true" class="left">
+						<view class="row" v-for="(category, index) in categoryList" :key="category.id"
+							:class="[index == showCategoryIndex ? 'on' : '']" @tap="showCategory(index)">
+							<view class="text">
+								<view class="block"></view>
+								{{ category.name }}
+							</view>
 						</view>
-					</view>
 
-				</scroll-view>
-				<!-- 右侧商品列表 -->
-				<scroll-view scroll-y="true" class="right">
-					<view class="product-list">
-						<view class="product-item" v-for="items in productList" :key="items.id" @tap="toProduct(items)">
-							<image :src="items.images[0]" mode="aspectFill" />
-							<view class="info">
-								<view class="name">{{ items.name }}</view>
-								<view class="price-cart">
-									<view class="price">
-										<text class="current">¥{{ items.price }}</text>
-										<text class="original" v-if="items.market_price">¥{{ items.market_price }}</text>
-									</view>
-									<!-- 添加购物车按钮,阻止冒泡避免触发商品详情 -->
-									<view class="cart-icon" @tap.stop="addToCart(items)">
-										<image src="/static/img/icons/shopping_cart.png" mode="aspectFit"></image>
+					</scroll-view>
+					<!-- 右侧商品列表 -->
+					<scroll-view scroll-y="true" class="right">
+						<view class="product-list">
+							<view class="product-item" v-for="items in productList" :key="items.id" @tap="toProduct(items)">
+								<image :src="items.images[0]" mode="aspectFill" />
+								<view class="info">
+									<view class="name">{{ items.name }}</view>
+									<view class="price-cart">
+										<view class="price">
+											<text class="current">¥{{ items.price }}</text>
+											<text class="original" v-if="items.market_price">¥{{ items.market_price }}</text>
+										</view>
+										<!-- 添加购物车按钮,阻止冒泡避免触发商品详情 -->
+										<view class="cart-icon" @tap.stop="addToCart(items)">
+											<image src="/static/img/icons/shopping_cart.png" mode="aspectFit"></image>
+										</view>
 									</view>
 								</view>
 							</view>
 						</view>
-					</view>
-					<view class="loading" v-if="loading">加载中...</view>
-					<view class="no-more" v-if="noMore">没有更多了</view>
-				</scroll-view>
-				<!-- #ifdef H5 -->
+						<view class="loading" v-if="loading">加载中...</view>
+						<view class="no-more" v-if="noMore">没有更多了</view>
+					</scroll-view>
+					<!-- #ifdef H5 -->
+				</view>
+				<!-- #endif -->
+				<!-- #ifdef MP-WEIXIN -->
 			</view>
 			<!-- #endif -->
-			<!-- #ifdef MP-WEIXIN -->
 		</view>
-		<!-- #endif -->
 	</view>
 </template>
 <script>
 import fixedSearch from '../../components/fixed-search/fixed-search.vue';
+import CustomHeader from '@/components/custom-header/custom-header.vue';
 
 export default {
-	components: { fixedSearch },
+	components: { fixedSearch, CustomHeader },
 
 	data() {
 		return {
@@ -70,7 +72,9 @@ export default {
 			loading: false,
 			noMore: false,
 			platform: '',
-			targetCategoryId: null
+			targetCategoryId: null,
+			logoUrl: '',
+			logoName: ''
 		}
 	},
 	onNavigationBarSearchInputClicked: async function (e) {
@@ -81,7 +85,7 @@ export default {
 
 	},
 	onShow() {
-
+		this.getLogoInfo();
 		const savedCategoryId = uni.getStorageSync('current_category_id');
 		if (savedCategoryId) {
 			this.targetCategoryId = parseInt(savedCategoryId);
@@ -91,7 +95,24 @@ export default {
 		}
 	},
 	methods: {
-
+		getLogoInfo() {
+			// 优先从缓存获取
+			const cachedLogo = uni.getStorageSync('store_logo_info');
+			if (cachedLogo) {
+				const logoInfo = JSON.parse(cachedLogo);
+				this.logoUrl = logoInfo.logoUrl;
+				this.logoName = logoInfo.logoName;
+			} else {
+				// 没有缓存再请求接口
+				this.$get('/wx_mini_app/banners/by-type/logo', {}, res => {
+					if (res.items && res.items.length > 0) {
+						this.logoUrl = res.items[0].upload_image || '';
+						this.logoName = res.items[0].name || '';
+						uni.setStorageSync('store_logo_info', JSON.stringify({logoUrl: this.logoUrl, logoName: this.logoName}));
+					}
+				});
+			}
+		},
 		initCateList() {
 			this.$get('/wx_mini_app/product-category', {
 				page: 1,
@@ -224,6 +245,20 @@ export default {
 }
 </script>
 <style lang="scss">
+
+.status-bar-height {
+	height: var(--status-bar-height);
+	width: 100%;
+	background-color: #fff;
+}
+
+.cate-content-card {
+	background: #fff;
+	border-radius: 16rpx;
+	margin: 0rpx 0rpx 0 00rpx;
+	box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+	padding-bottom: 0rpx;
+}
 .category-list {
 	//margin-top: 2.8rem;
 	width: 100%;

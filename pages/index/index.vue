@@ -3,29 +3,16 @@
 		<!-- 顶部安全区域 -->
 		<view class="status-bar-height"></view>
 		
-		<!-- 顶部搜索栏 -->
-		<view class="search-header">
-			<view class="store-logo" v-if="logoUrl">
-				<image :src="logoUrl" mode="aspectFit" class="logo-image"></image>
-				<text v-if="logoName" class="logo-name">{{logoName}}</text>
-			</view>
-			<view class="store-name" v-else>金酱酒业</view>
-			<!-- <view class="search-box" @click="toSearch">
-				<input 
-					class="search-input" 
-					type="text" 
-					placeholder="输入关键词搜索" 
-					placeholder-class="placeholder-style"
-					confirm-type="search"
-					v-model="searchKeyword"
-					@confirm="handleSearch"
-				/>
-				<image src="/static/icons/search.png" mode="aspectFit" class="search-icon" @click.stop="handleSearch"></image>
-			</view> -->
-			<view class="header-icons">
-				<image src="/static/icons/menu.png" mode="aspectFit" class="menu-icon"></image>
-			</view>
-		</view>
+		<!-- 使用自定义头部组件 -->
+		<custom-header
+			:logoUrl="logoUrl"
+			:logoName="logoName"
+			:showSearch="true"
+			:showMenu="true"
+			@search-click="toSearch"
+			@search-confirm="handleSearch"
+			@menu-click="handleMenuClick"
+		></custom-header>
 
 		<!-- 分享模块组件 -->
 		<share-module :title="shareTitle" :imageUrl="shareImage" :path="sharePath" :content="shareContent"
@@ -112,10 +99,12 @@
 
 <script>
 import ShareModule from '@/components/share-module/share-module.vue'
+import CustomHeader from '@/components/custom-header/custom-header.vue'
 
 export default {
 	components: {
-		ShareModule
+		ShareModule,
+		CustomHeader
 	},
 	// 添加小程序分享方法 - 分享给朋友
 	onShareAppMessage() {
@@ -392,6 +381,10 @@ export default {
 					this.shareImage = this.getFirstImage(firstProduct.images)
 				}
 			}
+		},
+		handleMenuClick() {
+			// 处理菜单点击事件
+			console.log('menu clicked')
 		}
 	},
 	watch: {
@@ -416,82 +409,6 @@ export default {
 	height: var(--status-bar-height);
 	width: 100%;
 	background-color: #fff;
-}
-
-/* 顶部搜索栏 */
-.search-header {
-	display: flex;
-	align-items: center;
-	padding: 20rpx 30rpx;
-	background: #fff;
-	z-index: 100;
-}
-
-.store-logo {
-	height: 60rpx;
-	margin-right: 20rpx;
-	margin-left: -10rpx;
-	display: flex;
-	align-items: center;
-}
-
-.logo-image {
-	height: 100rpx;
-	width: 100rpx;
-	margin-right: 10rpx;
-	flex-shrink: 0;
-}
-
-.logo-name {
-	font-size: 32rpx;
-	color: #333;
-	font-weight: bold;
-}
-
-.store-name {
-	font-size: 32rpx;
-	font-weight: bold;
-	color: #333;
-	margin-right: 20rpx;
-}
-
-.search-box {
-	flex: 1;
-	height: 64rpx;
-	background: #f5f5f5;
-	border-radius: 32rpx;
-	display: flex;
-	align-items: center;
-	padding: 0 20rpx;
-}
-
-.search-input {
-	flex: 1;
-	height: 60rpx;
-	font-size: 28rpx;
-	color: #333;
-	background: transparent;
-}
-
-.placeholder-style {
-	color: #999;
-	font-size: 28rpx;
-	margin-left: 10rpx;
-}
-
-.search-icon {
-	width: 40rpx;
-	height: 40rpx;
-	margin-left: auto;
-}
-
-.header-icons {
-	margin-left: 20rpx;
-}
-
-.menu-icon {
-	width: 48rpx;
-	height: 48rpx;
 }
 
 /* Banner样式 */

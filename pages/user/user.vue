@@ -1,5 +1,8 @@
 <template>
+
 	<view class="user">
+		<!-- <view class="status-bar-height"></view>
+		<custom-header :logoUrl="logoUrl" :logoName="logoName" :showSearch="false" :showMenu="false" /> -->
 		<!-- 头部 -->
 		<view class="user-header" :style="{'background-image': headerBgImage ? `url(${headerBgImage})` : ''}">
 			<view class="avatar-container" @click="userInfo.id && $navigateTo('/pages/user/set')">
@@ -138,6 +141,8 @@
 </template>
 
 <script>
+import CustomHeader from '@/components/custom-header/custom-header.vue';
+
 export default {
 	computed: {
 		storeUser() {
@@ -346,6 +351,14 @@ export default {
 </script>
 
 <style lang="scss">
+
+/* 顶部安全区域 */
+.status-bar-height {
+	height: var(--status-bar-height);
+	width: 100%;
+	background-color: #fff;
+}
+
 page {
 	background: #f2f2f2;
 	color: #333;
@@ -706,5 +719,9 @@ page {
 	border-radius: 50%;
 	border: 3rpx solid #fff;
 	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.cate-content-card {
+  min-height: 60vh;
 }
 </style>
