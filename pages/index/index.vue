@@ -10,7 +10,7 @@
 				<text v-if="logoName" class="logo-name">{{logoName}}</text>
 			</view>
 			<view class="store-name" v-else>金酱酒业</view>
-			<view class="search-box" @click="toSearch">
+			<!-- <view class="search-box" @click="toSearch">
 				<input 
 					class="search-input" 
 					type="text" 
@@ -21,7 +21,7 @@
 					@confirm="handleSearch"
 				/>
 				<image src="/static/icons/search.png" mode="aspectFit" class="search-icon" @click.stop="handleSearch"></image>
-			</view>
+			</view> -->
 			<view class="header-icons">
 				<image src="/static/icons/menu.png" mode="aspectFit" class="menu-icon"></image>
 			</view>
@@ -54,7 +54,7 @@
 		</view>
 
 		<!-- 滚动公告栏 -->
-		<view class="notice-bar">
+<!-- 		<view class="notice-bar">
 			<image src="/static/icons/notice.png" class="notice-icon"></image>
 			<swiper class="notice-swiper" vertical autoplay circular interval="3000">
 				<swiper-item v-for="(item, index) in noticeList" :key="index">
@@ -62,7 +62,7 @@
 				</swiper-item>
 			</swiper>
 			<view class="notice-more">更多</view>
-		</view>
+		</view> -->
 
 		<!-- 爆款推荐 -->
 		<view class="hot-recommend">
@@ -321,7 +321,14 @@ export default {
 			this.$navigateTo(url)
 		},
 		toCategory(item, index) {
-			this.$navigateTo(`/pages/category/list?id=${item.id || index}&name=${item.name}`)
+			// 保存当前分类ID，以便分类页面加载时能选中正确的分类
+			console.log("点击了事件",index)
+			uni.setStorageSync('current_category_id', item.id);
+			// 跳转到分类页面
+			console.log("开始跳转",index)
+			this.$navigateTo('/pages/cate/cate')
+
+		
 		},
 		toWholesale() {
 			this.$navigateTo('/pages/wholesale/index')
@@ -417,8 +424,6 @@ export default {
 	align-items: center;
 	padding: 20rpx 30rpx;
 	background: #fff;
-	position: sticky;
-	top: var(--status-bar-height);
 	z-index: 100;
 }
 
