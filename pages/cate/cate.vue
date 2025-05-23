@@ -22,7 +22,7 @@
 
 					</scroll-view>
 					<!-- 右侧商品列表 -->
-					<scroll-view scroll-y="true" class="right">
+					<scroll-view scroll-y="true" class="right" @scrolltolower="loadMore">
 						<view class="product-list">
 							<view class="product-item" v-for="items in productList" :key="items.id" @tap="toProduct(items)">
 								<image :src="items.images[0]" mode="aspectFill" />
@@ -149,6 +149,7 @@ export default {
 		},
 
 		loadProducts() {
+			console.log("loadProducts")
 			if (this.loading || this.noMore) return
 
 			this.loading = true
@@ -162,9 +163,14 @@ export default {
 			}, res => {
 				this.loading = false
 				if (res.code === 200) {
-					// 打印返回数据,方便调试
-					this.productList = res.data
-					if (this.productList.length == 0) {
+					// 追加数据
+					if (this.currentPage === 1) {
+						this.productList = res.data
+					} else {
+						this.productList = this.productList.concat(res.data)
+					}
+					// 判断是否还有更多
+					if (this.productList.length >= res.total) {
 						this.noMore = true
 					}
 				}
@@ -172,6 +178,7 @@ export default {
 		},
 
 		loadMore() {
+			console.log("loadMore触发")
 			if (!this.noMore) {
 				this.currentPage++
 				this.loadProducts()
@@ -260,10 +267,8 @@ export default {
 	padding-bottom: 0rpx;
 }
 .category-list {
-	//margin-top: 2.8rem;
-	width: 100%;
-	background-color: #fff;
 	display: flex;
+	height: 100vh;
 	.left {
 		width: 24%;
 		left: 0upx;
@@ -313,6 +318,8 @@ export default {
 	.right {
 		width: 76%;
 		left: 24%;
+		flex: 1;
+		min-height: 0;
 
 		.product-list {
 			padding: 20rpx;
