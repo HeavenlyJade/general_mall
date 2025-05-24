@@ -116,13 +116,13 @@
 				</view>
 	
 				
-		<!-- 		<view class="tool-item">
+				<view class="tool-item" @click="$navigateTo('/pages/card/index')">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/business_card.png" class="tool-icon-image"></image>
 					</view>
-					<text class="tool-text">我的名片</text>
+					<text class="tool-text">名片分享</text>
 				</view>
-		 -->
+		
 				<view class="tool-item" @click="$navigateTo('/pages/distribution/index')">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/distribution.png" class="tool-icon-image"></image>
@@ -365,13 +365,20 @@ export default {
 						// 清除用户数据和token
 						this.$dataLocal("token", "");
 						
-						// 创建空用户数据
+						// 创建空用户数据，清空所有用户相关信息
 						const emptyUser = {
 							headImg: '/static/img/user/default-head.png',
 							nickName: 'noname',
 							avatar: '/static/img/user/default-head.png',
 							wxHeadImg: '',
-							id: 0
+							wxNickName: '',
+							wxMpOpenId: '',
+							id: 0,
+							points: 0,
+							member_level: '',
+							balance: 0,
+							mobile: '',
+							nickname: ''
 						};
 						
 						// 更新用户数据
@@ -379,7 +386,10 @@ export default {
 						this.$store.dispatch("user/update", emptyUser);
 						this.userInfo = emptyUser;
 						
-						// 清除分享信息
+						// 清空可用收益
+						this.availableIncome = 0;
+						
+						// 清除所有本地存储的用户相关数据
 						uni.removeStorage({
 							key: "share_user_id",
 							success: () => console.log('清除share_user_id成功')
@@ -388,10 +398,27 @@ export default {
 							key: "share_openid",
 							success: () => console.log('清除share_openid成功')
 						});
+						uni.removeStorage({
+							key: "cardUid",
+							success: () => console.log('清除cardUid成功')
+						});
+						uni.removeStorage({
+							key: "referrer",
+							success: () => console.log('清除referrer成功')
+						});
+						
+						// 清除其他可能的用户数据缓存
+						const userDataKeys = ['userInfo', 'user_id', 'openid', 'unionid'];
+						userDataKeys.forEach(key => {
+							uni.removeStorage({
+								key: key,
+								success: () => console.log(`清除${key}成功`)
+							});
+						});
 						
 						this.$toast("已退出登录");
 						
-						// 刷新页面
+						// 刷新页面数据
 						this.getHeaderBgImage();
 					}
 				}

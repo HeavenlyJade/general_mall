@@ -427,6 +427,14 @@
 			  "navigationStyle": "default",
 			  "h5": {}
 			}
+		  },
+		  {
+			"path": "pages/card/index",
+			"style": {
+			  "navigationBarTitleText": "名片分享",
+			  "navigationStyle": "default",
+			  "h5": {}
+			}
 		  }
 		
 	],
