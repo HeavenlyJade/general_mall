@@ -435,6 +435,12 @@
 			  "navigationStyle": "default",
 			  "h5": {}
 			}
+		  },
+		  {
+			"path": "pages/share/index",
+			"style": {
+			  "navigationBarTitleText": "推广海报"
+			}
 		  }
 		
 	],

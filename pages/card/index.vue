@@ -1,7 +1,8 @@
 <template>
   <div class="container">
     <div class="max-width">
-      <img class="userinfo-avatar" :src="cardData.image_url || '/static/img/user/default-head.png'" mode="widthFix" />
+      <img class="userinfo-avatar" :src="cardData.image_url || '/static/img/user/default-head.png'
+      " mode="widthFix" />
     </div>
     <div class="profile-box">
       <div class="user-name">{{ cardData.name || '暂无姓名' }}</div>

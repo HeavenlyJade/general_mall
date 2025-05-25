@@ -116,11 +116,11 @@
 				</view>
 	
 				
-				<view class="tool-item" @click="$navigateTo('/pages/card/index')">
+				<view class="tool-item" @click="$navigateTo('/pages/share/index')">
 					<view class="tool-icon store-icon">
 						<image src="/static/img/icons/business_card.png" class="tool-icon-image"></image>
 					</view>
-					<text class="tool-text">名片分享</text>
+					<text class="tool-text">分享海报</text>
 				</view>
 		
 				<view class="tool-item" @click="$navigateTo('/pages/distribution/index')">
