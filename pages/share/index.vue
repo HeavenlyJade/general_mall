@@ -118,11 +118,11 @@
           this.bannerList = list
           this.currentIndex = 0
           uni.setStorageSync('share_banner_list', list)
-          this.preloadImages(list)
+        //   this.preloadImages(list)
         }, err => {
           this.bannerList = ['/static/img/default.jpg']
           this.currentIndex = 0
-          this.preloadImages(this.bannerList)
+        //   this.preloadImages(this.bannerList)
         })
       },
       
@@ -159,7 +159,7 @@
       getUserInfo() {
         const userData = this.getUser()
         this.userInfo = userData || {}
-        console.log('用户信息:', this.userInfo)
+        // console.log('用户信息:', this.userInfo)
       },
       
       // 生成二维码
@@ -252,56 +252,31 @@
       
       // 保存海报到相册
       savePoster() {
-        return new Promise((resolve, reject) => {
-          uni.showLoading({
-            title: '正在保存...'
-          })
-          
-          // 将整个海报区域转换为图片
-          setTimeout(() => {
-            uni.canvasToTempFilePath({
-              canvasId: 'qrCanvas',
-              success: (res) => {
-                uni.saveImageToPhotosAlbum({
-                  filePath: res.tempFilePath,
-                  success: () => {
-                    uni.hideLoading()
-                    uni.showToast({
-                      title: '保存成功',
-                      icon: 'success'
-                    })
-                    resolve()
-                  },
-                  fail: (error) => {
-                    uni.hideLoading()
-                    console.error('保存失败:', error)
-                    if (error.errMsg.includes('auth')) {
-                      uni.showModal({
-                        title: '提示',
-                        content: '需要授权访问相册才能保存图片',
-                        showCancel: false
-                      })
-                    } else {
-                      uni.showToast({
-                        title: '保存失败',
-                        icon: 'none'
-                      })
-                    }
-                    reject(error)
-                  }
-                })
-              },
-              fail: (error) => {
-                uni.hideLoading()
-                console.error('生成图片失败:', error)
-                uni.showToast({
-                  title: '生成图片失败',
-                  icon: 'none'
-                })
-                reject(error)
-              }
-            }, this)
-          }, 500)
+        const imgUrl = this.loadedImages[this.currentIndex]
+        if (!imgUrl) {
+          uni.showToast({ title: '图片未加载', icon: 'none' })
+          return
+        }
+        uni.saveImageToPhotosAlbum({
+          filePath: imgUrl,
+          success: () => {
+            uni.showToast({ title: '保存成功', icon: 'success' })
+          },
+          fail: (error) => {
+            if (error.errMsg && error.errMsg.includes('auth')) {
+              uni.showModal({
+                title: '提示',
+                content: '需要授权访问相册才能保存图片',
+                showCancel: false,
+                success: () => {
+                  // 自动打开设置页
+                  uni.openSetting()
+                }
+              })
+            } else {
+              uni.showToast({ title: '保存失败', icon: 'none' })
+            }
+          }
         })
       },
       

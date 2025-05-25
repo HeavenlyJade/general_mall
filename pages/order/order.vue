@@ -122,7 +122,8 @@ export default {
 
 			cond: {
 				page: 1,
-				pageSize: 10,
+				size: 10,
+				// pageSize: 10,
 				status: "" // 订单状态
 			},
 			orderList: [],

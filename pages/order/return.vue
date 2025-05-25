@@ -200,6 +200,8 @@
 						uni.redirectTo({
 							"url":"/pages/order/order-refund?state='退款中,已退款'"
 						})
+					}else if(res.code==400){
+						uni.showModal({ title: '提示', content: res.message, showCancel: false });
 					}else{
 						uni.showToast({ title: '申请失败' });
 					}
