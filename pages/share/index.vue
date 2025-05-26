@@ -218,8 +218,30 @@
           uni.showToast({ title: '图片未加载', icon: 'none' })
           return
         }
+        // 判断是否为本地路径（简单判断）
+        if (!imgUrl.startsWith('http')) {
+          // 已经是本地路径，直接保存
+          this.saveToAlbum(imgUrl)
+        } else {
+          // 先下载图片
+          uni.downloadFile({
+            url: imgUrl,
+            success: (res) => {
+              if (res.statusCode === 200) {
+                this.saveToAlbum(res.tempFilePath)
+              } else {
+                uni.showToast({ title: '图片下载失败', icon: 'none' })
+              }
+            },
+            fail: () => {
+              uni.showToast({ title: '图片下载失败', icon: 'none' })
+            }
+          })
+        }
+      },
+      saveToAlbum(filePath) {
         uni.saveImageToPhotosAlbum({
-          filePath: imgUrl,
+          filePath,
           success: () => {
             uni.showToast({ title: '保存成功', icon: 'success' })
           },
@@ -230,7 +252,6 @@
                 content: '需要授权访问相册才能保存图片',
                 showCancel: false,
                 success: () => {
-                  // 自动打开设置页
                   uni.openSetting()
                 }
               })
