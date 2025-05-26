@@ -35,14 +35,38 @@
 				</view>
 			</view>
 
-			<!-- 对应的产品系列 -->
-			<view class="product-grid">
-				<view class="product-item" v-for="product in productList[item.id]" :key="product.id"
-					@click="todetail(product)">
-					<image :src="getFirstImage(product.images)" mode="aspectFill" />
-					<view class="product-info">
-						<view class="name">{{ product.name }}</view>
-						<view class="sub-name">{{ product.alias }}</view>
+			<!-- 对应的产品系列分页 -->
+			<view class="product-grid-wrapper">
+				<swiper
+					v-if="productList[item.id] && productList[item.id].length > 4"
+					class="product-swiper"
+					:indicator-dots="true"
+					:circular="false"
+					:autoplay="false"
+					:current="productSwiperIndex[item.id] || 0"
+					@change="e => onProductSwiperChange(item.id, e)"
+					indicator-color="rgba(0,0,0,0.3)"
+					indicator-active-color="#8B0000"
+				>
+					<swiper-item v-for="(page, pageIndex) in getProductPages(productList[item.id])" :key="pageIndex">
+						<view class="product-grid">
+							<view class="product-item" v-for="product in page" :key="product.id" @click="todetail(product)">
+								<image :src="getFirstImage(product.images)" mode="aspectFill" />
+								<view class="product-info">
+									<view class="name">{{ product.name }}</view>
+									<view class="sub-name">{{ product.alias }}</view>
+								</view>
+							</view>
+						</view>
+					</swiper-item>
+				</swiper>
+				<view v-else class="product-grid">
+					<view class="product-item" v-for="product in productList[item.id]" :key="product.id" @click="todetail(product)">
+						<image :src="getFirstImage(product.images)" mode="aspectFill" />
+						<view class="product-info">
+							<view class="name">{{ product.name }}</view>
+							<view class="sub-name">{{ product.alias }}</view>
+						</view>
 					</view>
 				</view>
 			</view>
@@ -120,6 +144,7 @@ export default {
 			currentSwiper: 0,
 			swiperTimer: null,
 			isMuted: true,
+			productSwiperIndex: {},
 		}
 	},
 	onLoad(options) {
@@ -189,7 +214,7 @@ export default {
 
 			this.$get('/wx_mini_app/shop-product', {
 				page: 1,
-				size: 4,
+				size: 20,
 				need_total_count: true,
 				category_id: categoryId
 			}, res => {
@@ -294,6 +319,16 @@ export default {
 		},
 		toggleMute() {
 			this.isMuted = !this.isMuted;
+		},
+		getProductPages(products) {
+			const pages = [];
+			for (let i = 0; i < products.length; i += 4) {
+				pages.push(products.slice(i, i + 4));
+			}
+			return pages;
+		},
+		onProductSwiperChange(categoryId, e) {
+			this.productSwiperIndex[categoryId] = e.detail.current;
 		}
 	},
 	watch: {
@@ -382,13 +417,16 @@ export default {
 .product-grid {
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
+	grid-template-rows: repeat(2, 1fr);
 	gap: 20rpx;
 	padding: 20rpx;
+	min-height: 960rpx; /* 确保有足够高度显示2行 */
 
 	.product-item {
 		position: relative;
 		height: 460rpx;
-		width: 320rpx;
+		width: 100%;
+		max-width: 320rpx;
 		margin: 0 auto;
 		background: #fff;
 		border-radius: 12rpx;
@@ -567,6 +605,16 @@ export default {
 
 	.brand-intro {
 		margin: 20rpx;
+	}
+}
+
+.product-grid-wrapper {
+	.product-swiper {
+		height: 1000rpx; /* 确保轮播器有足够高度 */
+		
+		.swiper-item {
+			height: 100%;
+		}
 	}
 }
 </style>
