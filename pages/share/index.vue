@@ -94,17 +94,8 @@
     },
     
     methods: {
-      // 获取推广海报背景图（带本地缓存）
+      // 获取推广海报背景图（不做本地缓存和预加载）
       getBannerImage() {
-        // 先尝试从本地缓存读取
-        let cache = uni.getStorageSync('share_banner_list') || []
-        if (cache.length > 0) {
-          this.bannerList = cache
-          this.currentIndex = 0
-          this.preloadImages(cache)
-          return
-        }
-        // 没有缓存再请求接口
         this.$get('/wx_mini_app/banners/by-type/share', {}, res => {
           let list = []
           if (res.items && res.items.length > 0) {
@@ -116,42 +107,12 @@
             list = ['/static/img/default.jpg']
           }
           this.bannerList = list
+          this.loadedImages = list
           this.currentIndex = 0
-          uni.setStorageSync('share_banner_list', list)
-        //   this.preloadImages(list)
         }, err => {
           this.bannerList = ['/static/img/default.jpg']
+          this.loadedImages = ['/static/img/default.jpg']
           this.currentIndex = 0
-        //   this.preloadImages(this.bannerList)
-        })
-      },
-      
-      // 预加载图片
-      preloadImages(list) {
-        this.loadedImages = []
-        list.forEach((url, idx) => {
-          // #ifdef H5
-          const img = new window.Image()
-          img.crossOrigin = 'anonymous'
-          img.onload = () => {
-            this.$set(this.loadedImages, idx, url)
-          }
-          img.onerror = () => {
-            this.$set(this.loadedImages, idx, '/static/img/default.jpg')
-          }
-          img.src = url
-          // #endif
-          // #ifdef MP-WEIXIN
-          wx.getImageInfo({
-            src: url,
-            success: (res) => {
-              this.$set(this.loadedImages, idx, res.path)
-            },
-            fail: () => {
-              this.$set(this.loadedImages, idx, '/static/img/default.jpg')
-            }
-          })
-          // #endif
         })
       },
       

@@ -24,8 +24,8 @@
 		
 		<!-- 节点内容 -->
 		<view class="node-content" @tap.stop="onNodeClick">
-		  <text class="node-name">{{ node.name }}</text>
 		  <text class="node-username" v-if="node.nickname">{{ node.nickname }}</text>
+		  <text class="node-unknown" v-else>{{ node.name || '未知用户' }}</text>
 		</view>
 	  </view>
 	  
@@ -42,7 +42,7 @@
 		<!-- 递归渲染子节点 -->
 		<tree-node
 		  v-for="(child, index) in node.children"
-		  :key="child.id || index"
+		  :key="child.id ? 'id-' + child.id : 'index-' + index"
 		  :node="child"
 		  :level="level + 1"
 		  :default-expanded="defaultExpanded"
