@@ -37,6 +37,54 @@ Core.prototype.choose_image_upload = function(imgNum, callback) {
 	})
 
 }
+
+// 新增：专门用于上传微信头像的方法
+Core.prototype.upload_wx_avatar = function(avatarPath, callback) {
+	if (!avatarPath) {
+		console.error('微信头像路径不能为空');
+		if (typeof callback === 'function') {
+			callback(null, '头像路径不能为空');
+		}
+		return;
+	}
+
+
+	// 直接上传微信头像
+	requestUtil.upLoad(avatarPath, (data) => {
+		uni.hideLoading();
+		console.log("微信头像上传返回数据", data);
+		
+		// 获取URL并确保是绝对路径
+		let img = data.url;
+		if (img) {
+			// 处理URL格式问题
+			if (!img.startsWith('http')) {
+				img = img.startsWith('//') ? 'http:' + img : 'http://' + img;
+			}
+			
+			// 替换Windows反斜杠为正斜杠
+			img = img.replace(/\\/g, '/');
+			
+			console.log("处理后的微信头像URL:", img);
+			
+			if (typeof callback === 'function') {
+				callback(img, null);
+			}
+		} else {
+			console.error("获取微信头像URL失败，完整响应:", data);
+			if (typeof callback === 'function') {
+				callback(null, '获取头像URL失败');
+			}
+		}
+	}, (err) => {
+		uni.hideLoading();
+		console.error("微信头像上传失败:", err);
+		if (typeof callback === 'function') {
+			callback(null, '头像上传失败');
+		}
+	});
+}
+
 Core.prototype.upload_img = function(img_list, callback) {
 		let LIST = img_list;
 		let images = [];
@@ -436,6 +484,7 @@ export function get(a,b,c,d,e,f) { return requestUtil.get(a,b,c,d,e,f); }
 export function put(a,b,c,d) { return requestUtil.put(a,b,c,d); }
 export function del(a,b,c,d) { return requestUtil.delete(a,b,c,d); }
 export function post(a,b,c,d,e,f) {return requestUtil.post(a,b,c,d,e,f);}
+export function uploadWxAvatar(avatarPath, callback) { return requestUtil.upload_wx_avatar(avatarPath, callback); }
 
 var requestUtil = new Core();
 export default requestUtil

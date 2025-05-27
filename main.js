@@ -92,6 +92,7 @@ Vue.prototype.$put = requestUtil.put;
 Vue.prototype.$delete = requestUtil.delete;
 Vue.prototype.$upload = requestUtil.upLoad;
 Vue.prototype.$chooseImageUpload = requestUtil.choose_image_upload;
+Vue.prototype.$uploadWxAvatar = requestUtil.upload_wx_avatar;
 
 import wxUtil from "./static/js/utils/wxUtil.js"
 Vue.prototype.wxLogin = wxUtil.wxLogin;

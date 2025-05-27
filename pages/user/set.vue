@@ -7,14 +7,16 @@
 
 		<!-- 数据加载完成后显示表单 -->
 		<block v-else>
-			<view class="list-cell b-b m-t flex c-center" style="align-items: center;" @click="choseimg()"
-				hover-class="cell-hover" :hover-stay-time="50">
+			<view class="list-cell b-b m-t flex c-center" style="align-items: center;" hover-class="cell-hover" :hover-stay-time="50">
 				<text class="cell-tit w50p flex c-center">头像</text>
 				<view class="w50p flex m-end">
-					<image style="width: 2.6rem;height: 2.6rem; border-radius: 50%;" class="input"
-						:src="user.avatar || getConst().defaultAvatar"></image>
+					<view class="avatar-options">
+						<button class="avatar-image-btn" open-type="chooseAvatar" @chooseavatar="onChooseWxAvatar">
+							<image style="width: 2.6rem;height: 2.6rem; border-radius: 50%;" class="input"
+								:src="user.avatar || getConst().defaultAvatar"></image>
+						</button>
+					</view>
 				</view>
-
 			</view>
 
 			<view class="list-cell b-b" style="margin-top: 1rem;" hover-class="cell-hover" :hover-stay-time="50">
@@ -113,10 +115,57 @@ export default {
 					// 同时更新avatar和avatarurl，确保数据一致性
 					this.user.avatar = imgUrl;
 					this.user.avatarurl = imgUrl;
-			
 					// 强制刷新对象，确保Vue检测到变化
 					this.user = JSON.parse(JSON.stringify(this.user));
 					console.log("更新后的用户头像:", this.user.avatar);
+				}
+			})
+		},
+
+		// 微信头像授权选择
+		onChooseWxAvatar(e) {
+			if (!e.detail.avatarUrl) {
+				uni.showToast({
+					title: '获取微信头像失败',
+					icon: 'error'
+				})
+				return
+			}
+			
+			console.log('选择的微信头像:', e.detail.avatarUrl);
+			
+			// 使用专门的微信头像上传方法
+			this.$uploadWxAvatar(e.detail.avatarUrl, (imgUrl, error) => {
+				if (error) {
+					uni.showToast({ 
+						title: error || '头像上传失败', 
+						icon: 'error' 
+					})
+					return
+				}
+				if (imgUrl) {
+					// 确保URL是绝对路径
+					if (!imgUrl.startsWith('http')) {
+						imgUrl = imgUrl.startsWith('//') ? 'http:' + imgUrl : 'http://' + imgUrl;
+					}
+					
+					// 更新用户头像
+					this.user.avatar = imgUrl;
+					this.user.avatarurl = imgUrl;
+					
+					// 强制刷新对象，确保Vue检测到变化
+					this.user = JSON.parse(JSON.stringify(this.user));
+					console.log("更新后的微信头像:", this.user.avatar);
+					
+					uni.showToast({
+						title: '微信头像设置成功',
+						icon: 'success'
+					});
+				} else {
+					uni.showToast({ 
+						title: '头像上传失败', 
+						icon: 'error' 
+					})
 				}
 			})
 		},
@@ -395,5 +444,54 @@ page {
 	justify-content: center;
 	align-items: center;
 	height: 300rpx;
+}
+
+/* 头像选择相关样式 */
+.avatar-options {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.avatar-image-btn {
+	background: transparent;
+	border: none;
+	padding: 0;
+	margin: 0;
+	position: relative;
+	border-radius: 50%;
+	overflow: hidden;
+	transition: all 0.3s ease;
+}
+
+.avatar-image-btn::after {
+	border: none;
+}
+
+.avatar-image-btn:active {
+	transform: scale(0.95);
+	opacity: 0.8;
+}
+
+/* 添加一个悬浮提示效果 */
+.avatar-image-btn::before {
+	content: '点击更换头像';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: rgba(0, 0, 0, 0.7);
+	color: white;
+	padding: 4rpx 8rpx;
+	border-radius: 8rpx;
+	font-size: 20rpx;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+	z-index: 2;
+	white-space: nowrap;
+}
+
+.avatar-image-btn:active::before {
+	opacity: 1;
 }
 </style>

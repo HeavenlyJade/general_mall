@@ -15,7 +15,13 @@
 			
 			<!-- 未授权用户显示按钮  v-if="!hasWxAuth" --> 
 			<view  v-if="!hasWxAuth"  class="auth-buttons">
-				<button class="auth-btn" @click="getUserProfile">授权微信登录</button>
+				<button class="auth-btn" :class="{'auth-btn-loading': isLoggingIn}" @click="getUserProfile" :disabled="isLoggingIn">
+					<view class="auth-btn-content">
+						<view v-if="isLoggingIn" class="loading-spinner"></view>
+						<text v-if="!isLoggingIn">授权微信登录</text>
+						<text v-else>正在登录...</text>
+					</view>
+				</button>
 			</view>
 			
 		
@@ -172,25 +178,39 @@ export default {
 			],
 			currentIndex: 0,
 			availableIncome: 0,
+			isLoggingIn: false, // 添加登录状态标识
 			
 		};
 	},
 	methods: {
 		// 添加到methods中
 		getUserProfile() {
+			// 防止重复点击
+			if (this.isLoggingIn) {
+				return;
+			}
+			
+			// 设置登录状态并显示加载提示
+			this.isLoggingIn = true;
+			uni.showLoading({
+				title: '正在登录...',
+				mask: true
+			});
+			
 			// 直接调用getUserProfile，必须在用户点击事件中直接调用
 			wx.getUserInfo({
 				provider: 'weixin', // 指定微信登录
 				desc: '用于完善用戶资料', // 声明获取用户个人信息后的用途
 				success: (res) => {
 					// 获取用户信息成功后，再进行登录操作
-				
 					this.loginWithUserInfo(res.userInfo);
-					
 				},
 				fail: (err) => {
 					console.error('获取用户信息失败:', err);
 					this.$toast("获取用户信息失败: " + (err.errMsg || JSON.stringify(err)));
+					// 登录失败，重置状态
+					this.isLoggingIn = false;
+					uni.hideLoading();
 				}
 			});
 		},
@@ -226,7 +246,10 @@ export default {
 						
 						// 发送请求到后端API
 						this.$post("/wx_mini_app/wx_auth/wechat_login", requestData, result => {
-			
+							// 隐藏加载提示
+							uni.hideLoading();
+							// 重置登录状态
+							this.isLoggingIn = false;
 							
 							// 检查返回的数据结构
 							if (result.code === 200) {
@@ -259,11 +282,23 @@ export default {
 							}
 						}, err => {
 							console.error('更新用户信息失败:', err);
+							// 隐藏加载提示并重置状态
+							uni.hideLoading();
+							this.isLoggingIn = false;
+							this.$toast("网络错误，登录失败");
 						});
+					} else {
+						// 获取登录凭证失败
+						uni.hideLoading();
+						this.isLoggingIn = false;
+						this.$toast("获取登录凭证失败");
 					}
 				},
 				fail: (err) => {
 					console.error('登录失败:', err);
+					// 隐藏加载提示并重置状态
+					uni.hideLoading();
+					this.isLoggingIn = false;
 					this.$toast("登录失败: " + (err.errMsg || JSON.stringify(err)));
 				}
 			});
@@ -525,6 +560,39 @@ page {
 .auth-btn:active {
 	transform: scale(0.95);
 	box-shadow: 0 2px 5px rgba(255, 87, 34, 0.3);
+}
+
+.auth-btn-loading {
+	background: linear-gradient(to right, #bbb, #999) !important;
+	color: #fff !important;
+	opacity: 0.8;
+	cursor: not-allowed;
+}
+
+.auth-btn:disabled {
+	transform: none !important;
+	box-shadow: 0 4px 10px rgba(187, 187, 187, 0.3) !important;
+}
+
+.auth-btn-content {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8rpx;
+}
+
+.loading-spinner {
+	width: 24rpx;
+	height: 24rpx;
+	border: 2rpx solid rgba(255, 255, 255, 0.3);
+	border-top: 2rpx solid #fff;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
 }
 
 /* 统计数据样式 */
