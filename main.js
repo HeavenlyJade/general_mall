@@ -100,6 +100,10 @@ Vue.prototype.updateWxLogin = wxUtil.updateWxLogin;
 Vue.prototype.wxmpGetUser= wxUtil.wxmpGetUser;//已经弃用,使用mp-auth获取微信头像
  
 
+// 添加会员的等级的配置的接口
+import { fetchMemberLevelConfig, getLocalMemberLevelConfig } from './static/js/utils/memberLevelConfig.js';
+Vue.prototype.$fetchMemberLevelConfig = fetchMemberLevelConfig;
+Vue.prototype.$getLocalMemberLevelConfig = getLocalMemberLevelConfig;
 
 import wsUtil from "./static/js/utils/wsUtil.js"
 Vue.prototype.INIT_WS = wsUtil.INIT_WS;
@@ -125,4 +129,6 @@ import store from "./store/index.js";
 const app = new Vue({
     ...App,store
 })
+
+
 app.$mount()

@@ -148,6 +148,8 @@
 </template>
 
 <script>
+import { getMemberLevelConfig } from '@/static/js/utils/util.js';
+
 export default {
 	computed: {
 		storeUser() {
@@ -197,7 +199,6 @@ export default {
 				mask: true
 			});
 			
-			// 直接调用getUserProfile，必须在用户点击事件中直接调用
 			wx.getUserInfo({
 				provider: 'weixin', // 指定微信登录
 				desc: '用于完善用戶资料', // 声明获取用户个人信息后的用途
@@ -264,6 +265,9 @@ export default {
 								this.setUser(userData);
 								this.$store.dispatch("user/update", userData);
 								this.userInfo = userData;
+								
+								// 新增：登录成功后获取会员等级配置
+								this.$fetchMemberLevelConfig();
 								
 								this.$toast("登录成功");
 								

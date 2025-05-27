@@ -71,8 +71,16 @@
 		<!-- 金额明细 -->
 		<view class="yt-list">
 			<view class="yt-list-cell b-b">
-				<text class="cell-tit clamp">商品金额</text>
+				<text class="cell-tit clamp">商品原价</text>
 				<text class="cell-tip">￥{{ goodsTotal }}</text>
+			</view>
+			<view class="yt-list-cell b-b">
+				<text class="cell-tit clamp">会员折扣</text>
+				<text class="cell-tip">{{ memberDiscountText }}</text>
+			</view>
+			<view class="yt-list-cell b-b">
+				<text class="cell-tit clamp">折扣后金额</text>
+				<text class="cell-tip">￥{{ goodsTotalDiscount }}</text>
 			</view>
 			<!-- <view class="yt-list-cell b-b">
 				<text class="cell-tit clamp">优惠金额</text>
@@ -81,6 +89,23 @@
 			<view class="yt-list-cell b-b">
 				<text class="cell-tit clamp">运费</text>
 				<text class="cell-tip">￥{{ postage }}</text>
+			</view>
+			<view class="yt-list-cell b-b">
+				<text class="cell-tit clamp">积分抵扣</text>
+				<view style="display:flex;align-items:center;">
+					<switch :checked="usePoints" @change="onUsePointsChange"/>
+					<input
+						v-if="usePoints"
+						type="number"
+						v-model.number="pointsToUse"
+						:max="maxPoints"
+						:min="0"
+						style="width:80rpx;margin-left:10rpx;"
+						@input="onPointsInput"
+					/>
+					<text v-if="usePoints" style="margin-left:10rpx;">/ 可用{{maxPoints}}积分</text>
+				</view>
+				<text class="cell-tip" v-if="usePoints && pointsToUse > 0">-￥{{ pointsDeductAmount }}</text>
 			</view>
 			<view class="yt-list-cell desc-cell">
 				<text class="cell-tit clamp">备注</text>
@@ -93,32 +118,9 @@
 			<view class="price-content">
 				<text>实付款</text>
 				<text class="price-tip">￥</text>
-				<text class="price">{{ round2pos(goodsTotal - cur_coupon.price + postage) }}</text>
+				<text class="price">{{ finalAmount }}</text>
 			</view>
-			<text class="submit" @click="submit()">提交订单</text>
-		</view>
-
-		<!-- 优惠券面板 -->
-		<view class="mask" :class="maskState === 0 ? 'none' : maskState === 1 ? 'show' : ''" @click="toggleMask">
-			<view class="mask-content" @click.stop.prevent="stopPrevent">
-				<!-- 优惠券页面，仿mt -->
-				<view class="coupon-item" v-for="(item, index) in couponList" :key="index" @click="choseCoupon(item)">
-					<view class="con">
-						<view class="left">
-							<text class="title">{{ item.title }}</text>
-							<text class="time">有效期至2019-06-30</text>
-						</view>
-						<view class="right">
-							<text class="price">{{ item.price }}</text>
-							<text>满30可用</text>
-						</view>
-
-						<view class="circle l"></view>
-						<view class="circle r"></view>
-					</view>
-					<text class="tips">限新用户使用</text>
-				</view>
-			</view>
+			<text class="submit" @click="submit()" :disabled="!canSubmitOrder">提交订单</text>
 		</view>
 
 	</view>
@@ -135,19 +137,7 @@ export default {
 			maskState: 0, //优惠券面板显示状态
 			desc: '', //备注
 			payType: 1, //1微信 2支付宝
-			couponList: [{
-				title: '新用户专享优惠券',
-				price: 5,
-			},
-			{
-				title: '庆五一发一波优惠券',
-				price: 10,
-			},
-			{
-				title: '优惠券优惠券优惠券优惠券',
-				price: 15,
-			}
-			],
+		
 			cur_coupon: {
 				title: '',
 				price: 0,
@@ -166,7 +156,16 @@ export default {
 			},
 			submit_lock: 0,
 			goodsTotal: 0,
-			secretKey: CONFIG.data_secret_key // 直接从CONFIG中获取
+			goodsTotalDiscount: 0, // 新增：折扣后金额
+			memberDiscountRate: 100, // 新增：会员折扣率
+			memberDiscountText: '无折扣', // 新增：折扣显示文本
+			finalAmount: 0, // 新增：最终应付金额
+			secretKey: CONFIG.data_secret_key, // 直接从CONFIG中获取
+			usePoints: false, // 是否使用积分抵扣
+			pointsToUse: 0,   // 用户选择抵扣的积分数量
+			maxPoints: 0,     // 当前用户可用最大积分
+			pointsDeductAmount: 0, // 积分抵扣金额
+			canSubmitOrder: true, // 新增：是否允许提交订单
 
 
 		}
@@ -224,20 +223,6 @@ export default {
 				};
 			}
 
-			// // 用户信息中已有接收地址的情况
-			// if (!!this.userInfo.receiveAddr) {
-			// 	if (this.addressData.name == "点击添加收货地址") { //本地没有地址地址才保存
-			// 		this.addressData = JSON.parse(this.userInfo.receiveAddr);
-			// 	}
-			// } else {
-			// 	var u = {};
-			// 	u.id = this.userInfo.id;
-			// 	u.receiveAddr = JSON.stringify(this.addressData);
-			// 	//{"name":"点击添加收货地址","pickerText":"","addressName":"","area":""}
-			// 	if (!(this.addressData.name == "点击添加收货地址")) { //有地址才保存
-			// 		this.$post("user/update", u, (res) => { });
-			// 	}
-			// }
 
 		},
 
@@ -271,6 +256,22 @@ export default {
 			this.goods_list = this.$dataLocal("buy_list");
 			this.calcGoodsAmount();
 			this.userInfo = this.getUser();
+			console.log("this.userInfo ",this.userInfo )
+			// 最大可用积分为用户积分和（商品实付款-1）的较小值
+			let userPoints = this.userInfo.points || 0;
+			let maxDeduct = Math.max(this.goodsTotalDiscount + (this.postage || 0) - 1, 0);
+			this.maxPoints = Math.min(userPoints, maxDeduct);
+		},
+		getMemberDiscount() {
+			const levelList = this.$getLocalMemberLevelConfig() || [];
+			const userLevel = this.userInfo.member_level;
+			const levelObj = levelList.find(item => item.level_code === userLevel || item.level_name === userLevel);
+			return levelObj ? (levelObj.discount_rate || 100) : 100;
+		},
+		getMemberDiscountText(rate) {
+			if (rate >= 100) return '无折扣';
+			// 80 => 8折，85 => 8.5折
+			return (rate % 10 === 0 ? (rate / 10) : (rate / 10).toFixed(1)) + '折';
 		},
 		calcGoodsAmount() {
 			var li = this.goods_list;
@@ -281,10 +282,35 @@ export default {
 				var sub_sum = parseFloat(price) * parseFloat(ite.number);
 				sum = sum + sub_sum
 			}
-
 			this.goodsTotal = this.$round2pos(sum);
 
+			// 计算会员折扣
+			const discountRate = this.getMemberDiscount();
+			this.memberDiscountRate = discountRate;
+			this.goodsTotalDiscount = this.$round2pos(sum * (discountRate / 100));
+			this.memberDiscountText = this.getMemberDiscountText(discountRate);
 
+			// 最大可用积分为用户积分和（商品实付款-1）的较小值
+			let userPoints = this.userInfo.points || 0;
+			let maxDeduct = Math.max(this.goodsTotalDiscount + (this.postage || 0) - 1, 0);
+			this.maxPoints = Math.min(userPoints, maxDeduct);
+
+			// 计算最终应付金额（折扣后金额 + 运费 - 积分抵扣）
+			let postage = this.postage || 0;
+			let pointsDeduct = this.usePoints ? (this.pointsToUse || 0) : 0;
+			if (pointsDeduct > this.maxPoints) pointsDeduct = this.maxPoints;
+			if (pointsDeduct > userPoints) pointsDeduct = userPoints;
+			this.pointsDeductAmount = pointsDeduct;
+			this.finalAmount = this.$round2pos(this.goodsTotalDiscount + postage - pointsDeduct);
+			if (this.finalAmount < 1) this.finalAmount = 1;
+
+			// 校验积分合法性，决定是否允许提交
+			this.canSubmitOrder = true;
+			if (this.usePoints) {
+				if (this.pointsToUse > this.maxPoints || this.pointsToUse > (this.userInfo.points || 0)) {
+					this.canSubmitOrder = false;
+				}
+			}
 		},
 
 		discard() {
@@ -355,7 +381,6 @@ export default {
 				return;
 			}
 			var orderInfo = {};
-			orderInfo.amount = this.goodsTotal;
 			orderInfo.benefit = this.cur_coupon.price;
 			orderInfo.postage = this.postage;
 			var goodsDetail = [];
@@ -375,6 +400,13 @@ export default {
 			orderInfo.address = JSON.stringify(this.addressData);
 			orderInfo.goodsDetail = JSON.stringify(goodsDetail);
 			orderInfo.memo = this.desc
+
+			// 新增：传递折扣前金额、会员折扣、会员等级
+			orderInfo.original_amount = this.goodsTotal;
+			orderInfo.member_discount = this.goodsTotalDiscount; 
+			orderInfo.member_level = this.userInfo.member_level;
+			orderInfo.final_amount = this.finalAmount;
+
 			let single_user_info = {};
 			if (this.$isNull(this.userInfo.id)) {
 				this.$toast("请先登陆");
@@ -397,11 +429,26 @@ export default {
 			const signStr = this.$hexHash({secretKey: this.secretKey, timestamp: orderInfo.timestamp});
 			orderInfo.signStr = signStr;
 			
+			orderInfo.points_used = this.usePoints ? this.pointsToUse : 0;
+			orderInfo.points_deduct_amount = this.pointsDeductAmount;
+			
+			if (this.usePoints && (this.pointsToUse > this.maxPoints || this.pointsToUse > (this.userInfo.points || 0))) {
+				this.$toast('积分超出可用范围，无法提交订单');
+				return;
+			}
+			
 			this.$post("/wx_mini_app/shop-order", orderInfo, function (res) {
 				// 成功回调
 				if (res && res.code==200 ) {
 					let order_id = res.data.id;
-					let money = _this.goodsTotal - _this.cur_coupon.price + _this.postage;
+					let money = _this.finalAmount;
+					// 新增：下单成功后更新本地用户积分
+					if (_this.usePoints && _this.pointsToUse > 0) {
+						let userInfo = _this.getUser();
+						userInfo.points = Math.max((userInfo.points || 0) - _this.pointsToUse, 0);
+						_this.setUser(userInfo);
+						_this.userInfo = userInfo;
+					}
 					if (_this.isH5()) {
 						_this.$naviExter('./external/wxpay.html?order_id=' + order_id + '&money=' + money)
 					} else {
@@ -411,6 +458,7 @@ export default {
 				} 
 				else if(res && res.code==400 )  {
 					_this.$toast(res.message);
+					_this.submit_lock = 0; // 允许用户重新提交
 				}
 				else {
 					_this.submit_lock = 0; // 重置锁
@@ -423,7 +471,35 @@ export default {
 				_this.$toast('订单提交失败，请重试');
 			});
 		},
-		stopPrevent() { }
+		stopPrevent() { },
+		onUsePointsChange(e) {
+			this.usePoints = e.detail ? e.detail.value : e;
+			if (!this.usePoints) {
+				this.pointsToUse = 0;
+				this.pointsDeductAmount = 0;
+			} else {
+				// 默认全用
+				this.pointsToUse = this.maxPoints;
+				this.pointsDeductAmount = this.pointsToUse;
+			}
+			this.calcGoodsAmount();
+		},
+		onPointsInput(e) {
+			let val = Number(e.detail ? e.detail.value : e.target.value || 0);
+			let userPoints = this.userInfo.points || 0;
+			if (val > this.maxPoints) {
+				this.$toast('不能超过最大可用积分');
+				val = this.maxPoints;
+			}
+			if (val > userPoints) {
+				this.$toast('不能超过您拥有的积分');
+				val = userPoints;
+			}
+			if (val < 0) val = 0;
+			this.pointsToUse = val;
+			this.pointsDeductAmount = val;
+			this.calcGoodsAmount();
+		}
 	}
 }
 </script>

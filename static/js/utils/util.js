@@ -413,6 +413,21 @@ Core.prototype.updateAppVersion=function(){ //要在initconfig后面调用
 		}	
 }
 
+Core.prototype.getMemberLevelConfig = function(callback) {
+    get('/wx_mini_app/member-level/', { need_total_count: true }, (res) => {
+        if (res && res.code === 200) {
+            data_local('member_level_config', res);
+        }
+        if (typeof callback === 'function') {
+            callback(res);
+        }
+    }, (err) => {
+        if (typeof callback === 'function') {
+            callback(null, err);
+        }
+    });
+};
 
 var mainUtil=new Core();
 export default mainUtil
+export function getMemberLevelConfig(e) { return mainUtil.getMemberLevelConfig(e); }

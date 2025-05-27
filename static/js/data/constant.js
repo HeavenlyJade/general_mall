@@ -1,8 +1,8 @@
 var CONFIG={
 	//host:"http://localhost:8086/", 
 	
-	//host:"http://127.0.0.1:5555/api/v1",
-	host:"https://dwjc.mcorg.com/api/v1",
+	host:"http://127.0.0.1:5555/api/v1",
+	//host:"https://dwjc.mcorg.com/api/v1",
 	projectName:"wxh5/#/",
 	WS:"ws://192.168.1.6:8090/websocket/", 
 	// upload_url:"http://8.137.108.237:8012/api/v1",
@@ -33,6 +33,7 @@ CONFIG.localKey={
 	/* ============================$dataLocal */
 	"launchFlag":"launchFlag",  //guider页面
 	"is_agree":"is_agree",  //注册隐私政策页面   
+	"member_level_config":"member_level_config" // 新增：会员等级配置
 	
 }
 
