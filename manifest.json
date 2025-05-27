@@ -52,13 +52,24 @@
     "mp-weixin" : {
         "appid" : "wx755aabf27ec3641d",
         "setting" : {
-            "urlCheck" : false
+            "urlCheck" : false,
+            "checkSiteMap" : false,
+            "minified" : true,
+            "es6" : true
         },
         "usingComponents" : true,
         "permission" : {
             "scope.userLocation" : {
                 "desc" : "获取附加门店位置"
+            },
+            "scope.writePhotosAlbum" : {
+                "desc" : "保存推广海报到相册"
             }
+        },
+        "requiredBackgroundModes" : ["audio", "location"],
+        "networkTimeout" : {
+            "request" : 30000,
+            "downloadFile" : 30000
         }
     },
     "mp-alipay" : {

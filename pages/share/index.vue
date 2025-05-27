@@ -97,19 +97,26 @@
       // 获取推广海报背景图（不做本地缓存和预加载）
       getBannerImage() {
         this.$get('/wx_mini_app/banners/by-type/share', {}, res => {
+          console.log('获取分享海报API响应:', res)
           let list = []
           if (res.items && res.items.length > 0) {
             list = res.items.map(item => item.upload_image).filter(Boolean)
           } else if (res.data && res.data.length > 0) {
             list = res.data.map(item => item.upload_image || item.image_url).filter(Boolean)
           }
+          
+          // 直接使用原始URL，不做任何处理
+          console.log('原始图片URL列表:', list)
+          
           if (list.length === 0) {
             list = ['/static/img/default.jpg']
           }
+          
           this.bannerList = list
           this.loadedImages = list
           this.currentIndex = 0
         }, err => {
+          console.error('获取分享海报失败:', err)
           this.bannerList = ['/static/img/default.jpg']
           this.loadedImages = ['/static/img/default.jpg']
           this.currentIndex = 0
@@ -211,53 +218,107 @@
         })
       },
       
-      // 保存海报到相册
+      // 保存海报到相册 - 使用简化的下载方式
       savePoster() {
+        console.log('开始保存海报流程')
+        console.log('当前图片索引:', this.currentIndex)
+        console.log('加载的图片列表:', this.loadedImages)
+        
         const imgUrl = this.loadedImages[this.currentIndex]
+        console.log('准备保存的图片URL:', imgUrl)
+        
         if (!imgUrl) {
-          uni.showToast({ title: '图片未加载', icon: 'none' })
+          uni.showToast({ 
+            title: '图片未加载，请稍等片刻后重试', 
+            icon: 'none',
+            duration: 3000 
+          })
           return
         }
-        // 判断是否为本地路径（简单判断）
-        if (!imgUrl.startsWith('http')) {
-          // 已经是本地路径，直接保存
-          this.saveToAlbum(imgUrl)
-        } else {
-          // 先下载图片
-          uni.downloadFile({
-            url: imgUrl,
-            success: (res) => {
-              if (res.statusCode === 200) {
-                this.saveToAlbum(res.tempFilePath)
-              } else {
-                uni.showToast({ title: '图片下载失败', icon: 'none' })
-              }
-            },
-            fail: () => {
-              uni.showToast({ title: '图片下载失败', icon: 'none' })
-            }
-          })
-        }
+        
+        // 显示加载提示
+        uni.showLoading({
+          title: '保存中...',
+          mask: true
+        })
+        
+        // 直接使用wx.downloadFile和wx.saveImageToPhotosAlbum
+        this.simpleDownloadAndSave(imgUrl)
       },
-      saveToAlbum(filePath) {
-        uni.saveImageToPhotosAlbum({
-          filePath,
-          success: () => {
-            uni.showToast({ title: '保存成功', icon: 'success' })
-          },
-          fail: (error) => {
-            if (error.errMsg && error.errMsg.includes('auth')) {
-              uni.showModal({
-                title: '提示',
-                content: '需要授权访问相册才能保存图片',
-                showCancel: false,
+      
+      // 简化的下载和保存方法 - 直接使用原始URL
+      simpleDownloadAndSave(imgUrl) {
+        console.log('直接下载图片:', imgUrl)
+        
+        // 直接使用原始URL下载
+        wx.downloadFile({
+          url: imgUrl,
+          success: (res) => {
+            console.log('下载成功:', res)
+            if (res.statusCode === 200) {
+              // 下载成功后保存到相册
+              wx.saveImageToPhotosAlbum({
+                filePath: res.tempFilePath,
                 success: () => {
-                  uni.openSetting()
+                  uni.hideLoading()
+                  wx.showToast({
+                    title: '保存成功',
+                    icon: 'success',
+                    duration: 2000
+                  })
+                },
+                fail: (error) => {
+                  uni.hideLoading()
+                  console.error('保存失败:', error)
+                  
+                  // 处理权限问题
+                  if (error.errMsg && error.errMsg.includes('auth')) {
+                    uni.showModal({
+                      title: '需要相册权限',
+                      content: '保存图片需要访问您的相册权限，请在设置中开启',
+                      confirmText: '去设置',
+                      cancelText: '取消',
+                      success: (modalRes) => {
+                        if (modalRes.confirm) {
+                          uni.openSetting()
+                        }
+                      }
+                    })
+                  } else {
+                    wx.showToast({
+                      title: `保存失败: ${error.errMsg || '未知错误'}`,
+                      icon: 'none',
+                      duration: 3000
+                    })
+                  }
                 }
               })
             } else {
-              uni.showToast({ title: '保存失败', icon: 'none' })
+              uni.hideLoading()
+              wx.showToast({
+                title: `下载失败，状态码: ${res.statusCode}`,
+                icon: 'none',
+                duration: 3000
+              })
             }
+          },
+          fail: (error) => {
+            uni.hideLoading()
+            console.error('下载失败:', error)
+            
+            // 简化错误处理
+            let errorMsg = '下载失败'
+            if (error.errMsg && error.errMsg.includes('domain list')) {
+              errorMsg = 'URL未配置到合法域名，请联系管理员'
+            } else if (error.errMsg) {
+              errorMsg = `下载失败: ${error.errMsg}`
+            }
+            
+            wx.showToast({
+              title: errorMsg,
+              icon: 'none',
+              duration: 3000
+            })
           }
         })
       },
@@ -281,7 +342,9 @@
         const userId = this.userInfo.id || this.userInfo.user_id || ''
         this.sharePath = `/pages/share/index?user_id=${userId}`
       },
-    },
+                     // 测试静态图片保存
+      
+      },
     
     onLoad() {
       this.getUserInfo()
@@ -419,7 +482,7 @@
     padding: 0 60rpx;
   }
   
-  .share-btn, .save-btn {
+  .share-btn, .save-btn, .debug-btn, .test-btn, .static-test-btn {
     flex: 1;
     height: 80rpx;
     border-radius: 40rpx;
@@ -435,6 +498,11 @@
   
   .save-btn {
     background: linear-gradient(135deg, #2196F3, #1976D2);
+  }
+  
+  .debug-btn, .test-btn, .static-test-btn {
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+    font-size: 20rpx;
   }
   
   /* 页面指示器 */
