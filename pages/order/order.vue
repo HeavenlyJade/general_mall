@@ -162,7 +162,7 @@ export default {
 	methods: {
 		cancelOrder(e) {
 			this.$comfirm("订单还没有支付,确定要删除吗?", cf => {
-				this.$put(`/wx_mini_app/shop-order/${e.id}/cancel`, {}, res => {
+				this.$post(`/wx_mini_app/shop-order/cancel`, {"order_no": e.order_info.order_no}, res => {
 					this.$toast("取消成功");
 					this.reload_list();
 				});

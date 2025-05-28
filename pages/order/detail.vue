@@ -100,8 +100,12 @@
         <text class="value">¥{{ order.order_info.freight_amount || '0.00' }}</text>
       </view>
       <view class="amount-item">
-        <text class="label">优惠</text>
+        <text class="label">会员折扣</text>
         <text class="value">-¥{{ order.order_info.discount_amount || '0.00' }}</text>
+      </view>
+      <view class="amount-item">
+        <text class="label">积分抵扣</text>
+        <text class="value">-¥{{ order.order_info.point_amount || '0.00' }}</text>
       </view>
       <view class="amount-item total">
         <text class="label">实付款</text>
@@ -252,7 +256,7 @@ export default {
     },
     cancelOrder(e) {
       this.$comfirm("订单还没有支付,确定要删除吗?", cf => {
-        this.$put(`/wx_mini_app/shop-order/${e.id}/cancel`, {}, res => {
+        this.$post(`/wx_mini_app/shop-order/cancel`, {  "order_no": e.order_info.order_no}, res => {
           this.$toast("取消成功");
           uni.navigateBack();
         });
