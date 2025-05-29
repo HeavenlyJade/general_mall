@@ -441,6 +441,13 @@
 			"style": {
 			  "navigationBarTitleText": "推广海报"
 			}
+		  },
+		  {
+			"path": "pages/user/invite-code",
+			"style": {
+			  "navigationBarTitleText": "填写邀请码",
+			  "navigationStyle": "default"
+			}
 		  }
 		
 	],

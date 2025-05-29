@@ -10,7 +10,7 @@
 			</view>
 			<view class="user-info">
 				<view class="nickname">{{storeUser.wxNickName || userInfo.nickname || userInfo.wxNickName || '未登录'}}</view>
-				<view class="user-id" v-if="userInfo.id">ID: {{userInfo.id}}</view>
+				<view class="user-id" v-if="userInfo.invite_code" @click="copyInviteCode" style="cursor:pointer;">邀请码: {{userInfo.invite_code}}</view>
 			</view>
 			
 			<!-- 未授权用户显示按钮  v-if="!hasWxAuth" --> 
@@ -140,6 +140,12 @@
 						<image src="/static/img/icons/personal_Information.png" class="tool-icon-image"></image>
 					</view>
 					<text class="tool-text">个人信息</text>
+				</view>
+				<view class="tool-item" @click="$navigateTo('/pages/user/invite-code')">
+					<view class="tool-icon store-icon">
+						<image src="/static/img/icons/Invitation_code.png" class="tool-icon-image"></image>
+					</view>
+					<text class="tool-text">邀请码</text>
 				</view>
 			</view>
 		</view>
@@ -462,6 +468,19 @@ export default {
 					}
 				}
 			});
+		},
+		copyInviteCode() {
+			if (this.userInfo.invite_code) {
+				uni.setClipboardData({
+					data: this.userInfo.invite_code + '',
+					success: () => {
+						this.$toast('邀请码已复制');
+					},
+					fail: () => {
+						this.$toast('复制失败，请手动复制');
+					}
+				});
+			}
 		},
 	},
 	onLoad(options) {
