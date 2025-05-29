@@ -364,6 +364,13 @@ export default {
 			this.payType = type;
 		},
 		submit() {
+			// 获取分销用户信息
+			const distributionUser = this.$dataLocal ? this.$dataLocal('distributionUser') : null;
+			if (!distributionUser || !distributionUser.user_father_invite_code) {
+				this.$toast('非邀请用户不能下单,请前往我的页面-->邀请码 填写注册邀请码');
+				return;
+			}
+
 			this._submit();
 			/* let dp=this.$getDateParam();
 			
