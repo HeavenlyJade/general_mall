@@ -379,7 +379,8 @@ export default {
 				
 				if (response && response.code === 200) {
 					const responseData = response.data || {};
-					
+					this.$dataLocal('distributionUser', responseData.distribution);
+
 					// 如果有收入数据，更新可提现金额显示
 					if (responseData && responseData.income && responseData.income.pending_money) {
 						// 更新页面上的收益显示

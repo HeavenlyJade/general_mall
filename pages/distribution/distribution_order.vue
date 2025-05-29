@@ -309,7 +309,7 @@ export default {
       // 从起始日期和结束日期解析出日期范围
       const [startDate, endDate] = this.dateRange.split('至');
 
-      this.$get("/wx_mini_app/distribution_income", {
+      this.$get("/wx_mini_app/wx/distribution_income", {
         start_date: startDate,
         end_date: endDate,
         status: this.activeTab,

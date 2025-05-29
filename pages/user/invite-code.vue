@@ -7,8 +7,13 @@
     ></view>
     <view class="content">
       <view class="title">填写邀请码</view>
-      <input v-model="inviteCode" class="input" placeholder="请输入邀请码" />
-      <button class="submit-btn" @click="submitInviteCode">提交</button>
+      <view v-if="canInputInviteCode">
+        <input v-model="inviteCode" class="input" placeholder="请输入邀请码" />
+        <button class="submit-btn" @click="submitInviteCode">提交</button>
+      </view>
+      <view v-else style="text-align:center;color:#999;margin-top:40rpx;">
+        您已绑定的邀请码：<text style="color:#333;">{{bindedInviteCode}}</text>
+      </view>
     </view>
   </view>
 </template>
@@ -18,7 +23,9 @@ export default {
   data() {
     return {
       inviteCode: '',
-      headerBgImage: ''
+      headerBgImage: '',
+      canInputInviteCode: true,
+      bindedInviteCode: ''
     };
   },
   methods: {
@@ -36,9 +43,11 @@ export default {
         this.$toast('请输入邀请码');
         return;
       }
-      this.$post('/wx_mini_app/user/bind_invite_code', { invite_code: this.inviteCode }, res => {
+      this.$post('/wx_mini_app/wx/distributionInviteCode', { user_father_invite_code: this.inviteCode }, res => {
         if (res.code === 200) {
           this.$toast('邀请码绑定成功');
+          this.$dataLocal('distributionUser', res.data);
+
           setTimeout(() => {
             uni.navigateBack();
           }, 1000);
@@ -52,6 +61,14 @@ export default {
   },
   onLoad() {
     this.getHeaderBgImage();
+    let distributionUser = this.$dataLocal('distributionUser');
+    if (distributionUser && distributionUser.user_father_invite_code) {
+      this.canInputInviteCode = false;
+      this.bindedInviteCode = distributionUser.user_father_invite_code;
+    } else {
+      this.canInputInviteCode = true;
+      this.bindedInviteCode = '';
+    }
   }
 };
 </script>

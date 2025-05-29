@@ -21,7 +21,7 @@
         <div class="tag-container">
           <span class="tag">分销等级:LV{{ userData.grade_id || 0 }}</span>
         </div>
-        <div class="referrer">上级分销：{{ userData.referrer || '无' }}</div>
+        <div class="referrer">上级分销：{{ userData.father_name || '无' }}</div>
       </div>
     </div>
 
